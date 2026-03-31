@@ -15,8 +15,8 @@ interface VideoSectionProps {
   collections?: {
     name: string;
     handle: string;
-    image: string;
-    description: string;
+    image?: string;
+    description?: string;
   }[];
 }
 
@@ -25,7 +25,7 @@ export function VideoSection({ collections = [] }: VideoSectionProps) {
   const router = useRouter();
 
   const galleryItems = collections.map(c => ({
-    image: c.image,
+    image: c.image || "/collections/placeholder.png",
     text: c.name,
     href: `/collections/${c.handle}`
   }));
