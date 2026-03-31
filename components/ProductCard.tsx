@@ -1,13 +1,13 @@
-"use client";
-
+import Image from "next/image";
 import Link from "next/link";
 import { Product } from "@/lib/data-loader";
 
 interface ProductCardProps {
   product: Product;
+  priority?: boolean;
 }
 
-export function ProductCard({ product }: ProductCardProps) {
+export function ProductCard({ product, priority = false }: ProductCardProps) {
   const discount = Math.round(
     ((product.originalPrice - product.price) / product.originalPrice) * 100,
   );
@@ -18,10 +18,13 @@ export function ProductCard({ product }: ProductCardProps) {
       className="group flex flex-col premium-border bg-card/50 overflow-hidden transition-all duration-500 hover:bg-[#1a1a19] no-underline"
     >
       <div className="relative w-full overflow-hidden bg-card h-64 md:h-80 flex items-center justify-center">
-        <img
+        <Image
           src={product.images[0]}
           alt={product.title}
-          className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+          fill
+          priority={priority}
+          sizes="(max-width: 768px) 50vw, (max-width: 1200px) 33vw, 25vw"
+          className="object-cover transition-transform duration-700 group-hover:scale-110"
         />
         {discount > 0 && (
           <div className="absolute top-2 left-2 z-10 bg-black/90 text-white text-[9px] font-black px-2 py-1 uppercase tracking-luxury">

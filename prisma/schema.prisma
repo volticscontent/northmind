@@ -111,12 +111,13 @@ model Produto {
   collection      String
   fotoPrincipal   String?  // Foto de destaque (Thumbnail)
   fotos           String[] // Outras fotos do grid
-  videos          String[] // URLs de vídeos no R2
-  
-  // Avaliações (Manual Override)
+  publicado       Boolean  @default(true)
+  opcoesTamanho   String[] @default(["S", "M", "L", "XL", "XXL"])
+  opcoesCor       Json?    // [{ name: "Black", hex: "#000000" }]
+  highlights      Json?    // [{ icon: "Shield", title: "Warranty", text: "..." }]
+  videos          String[]
   totalAvaliacoes Int      @default(0)
   mediaAvaliacoes Float    @default(5.0)
-
   comentarios     Comentario[] // Relation to actual comments if present
 
   createdAt       DateTime @default(now())

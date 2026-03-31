@@ -586,7 +586,7 @@ export default function CheckoutForm({ items }: CheckoutFormProps) {
           border: 1px solid #d1d5db;
           border-radius: 6px;
           background-color: #ffffff;
-          font-size: 14px;
+          font-size: 16px;
           color: #111827;
           transition:
             border-color 0.2s,
@@ -716,6 +716,11 @@ export default function CheckoutForm({ items }: CheckoutFormProps) {
           background-color: #ffffff;
           border: 1px solid #1dd81d;
           color: #000000;
+        }
+
+        .submit-btn:active {
+          transform: scale(0.98);
+          opacity: 0.9;
         }
 
         .submit-btn:disabled {
@@ -936,7 +941,7 @@ export default function CheckoutForm({ items }: CheckoutFormProps) {
           .right-col {
             padding: 32px 16px;
             justify-content: center;
-            border-bottom: 1px solid #d1d5db; /* Separador para o topo */
+            border-bottom: 1px solid #d1d5db;
           }
 
           .right-content {
@@ -946,6 +951,12 @@ export default function CheckoutForm({ items }: CheckoutFormProps) {
           .row-inputs {
             flex-direction: column;
             gap: 12px;
+          }
+
+          .submit-btn {
+            padding: 16px 20px;
+            font-size: 16px;
+            min-height: 52px;
           }
         }
       `}</style>

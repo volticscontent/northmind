@@ -5,7 +5,7 @@ export function Footer() {
   const currentYear = new Date().getFullYear();
 
   return (
-    <footer className="bg-[#0c0c0b] border-t border-white/5 pt-16 pb-8 px-4 text-white/60">
+    <footer className="bg-[#0c0c0b] border-t border-white/5 pt-16 pb-8 px-4 text-white/60" style={{ paddingBottom: 'max(32px, env(safe-area-inset-bottom))' }}>
       <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-12 mb-16">
         <div className="col-span-1">
           <Image
@@ -48,9 +48,9 @@ export function Footer() {
               <input
                 type="email"
                 placeholder="EMAIL ADDRESS"
-                className="bg-transparent border border-white/10 px-4 py-2 text-xs flex-grow focus:outline-none focus:border-gold transition-colors"
+                className="bg-transparent border border-white/10 px-4 py-3 text-base md:text-xs flex-grow focus:outline-none focus:border-gold transition-colors min-h-[44px]"
               />
-              <button className="bg-white text-black px-4 py-2 text-[10px] font-bold hover:bg-gold transition-colors">
+              <button className="bg-white text-black px-4 py-3 text-[10px] font-bold hover:bg-gold transition-colors min-h-[44px] active:opacity-80">
                 JOIN
               </button>
             </div>

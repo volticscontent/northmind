@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Plus, Edit2, Trash2, X, Folder, Image as ImageIcon } from "lucide-react";
+import { Plus, Edit2, Trash2, X, Folder, Image as ImageIcon, ExternalLink } from "lucide-react";
 import { getCollections, deleteCollection, getProducts } from "@/lib/actions";
 import { CollectionForm } from "./CollectionForm";
 
@@ -131,19 +131,31 @@ export function CollectionManager() {
                       <h3 className="text-sm font-black uppercase tracking-tight text-white mb-1 group-hover:text-accent transition-colors">
                         {collection.name}
                       </h3>
-                      <p className="text-[9px] font-mono text-white/30 truncate">/{collection.handle}</p>
+                      <div className="flex items-center gap-3">
+                        <p className="text-[9px] font-mono text-white/30 truncate">/{collection.handle}</p>
+                        <div className="flex items-center gap-1.5 px-3 py-1 bg-emerald-500/10 border border-emerald-500/20 rounded-full">
+                          <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                          <span className="text-[9px] font-black text-emerald-500 uppercase tracking-widest mt-px">Live Storefront</span>
+                        </div>
+                      </div>
                     </div>
                     
                     <div className="flex items-center gap-2">
+                        <a 
+                            href={`/collections/${collection.handle}`} target="_blank" rel="noopener noreferrer" 
+                            className="p-2.5 bg-emerald-500/10 rounded-xl hover:bg-emerald-500 text-emerald-500 hover:text-white transition-all" title="View Frontend Category"
+                        >
+                            <ExternalLink size={14} />
+                        </a>
                         <button 
                             onClick={() => openForm(collection)}
-                            className="p-2.5 bg-white/5 rounded-xl hover:bg-white/10 text-white/40 hover:text-white transition-all"
+                            className="p-2.5 bg-white/5 rounded-xl hover:bg-white/10 text-white/40 hover:text-white transition-all" title="Edit Category"
                         >
                             <Edit2 size={14} />
                         </button>
                         <button 
                             onClick={() => handleDelete(collection.id)}
-                            className="p-2.5 bg-rose-500/5 rounded-xl hover:bg-rose-500/20 text-rose-500/40 hover:text-rose-500 transition-all"
+                            className="p-2.5 bg-rose-500/5 rounded-xl hover:bg-rose-500/20 text-rose-500/40 hover:text-rose-500 transition-all" title="Delete Category"
                         >
                             <Trash2 size={14} />
                         </button>

@@ -56,6 +56,37 @@ async function main() {
   }
 
   console.log("Products seeded successfully.");
+
+  // 3. Sync Collections (Restore All Catalog Sections)
+  console.log("🚀 Syncing all core collections (Noir Aesthetic)...");
+  
+  const coreCollections = [
+    { handle: "jackets", name: "Jackets", image: "/collections/jackets.png", desc: "Heritage leather and artisan-crafted outerwear. Noir Collection." },
+    { handle: "silent-warmth", name: "Silent Warmth", image: "/collections/silent-warmth.png", desc: "Premium heavyweight knitwear and winter essences. Noir Collection." },
+    { handle: "fragrances", name: "Fragrances", image: "/collections/fragrances.png", desc: "Signature scents and modern chic perfumery. Noir Collection." },
+    { handle: "t-shirts", name: "T-Shirts", image: "/collections/t-shirts.png", desc: "Minimalist luxury essentials in premium cotton. Noir Collection." },
+    { handle: "special-promo", name: "Special Promo", image: "/collections/special-promo.png", desc: "Exclusive access to seasonal drops and limited pieces." },
+    { handle: "kits", name: "Kits", image: "/collections/kits.png", desc: "Curated gift sets for the complete luxury experience." }
+  ];
+
+  for (const item of coreCollections) {
+    await prisma.collection.upsert({
+      where: { handle: item.handle },
+      update: {
+        name: item.name,
+        description: item.desc,
+        image: item.image
+      },
+      create: {
+        handle: item.handle,
+        name: item.name,
+        description: item.desc,
+        image: item.image
+      }
+    });
+  }
+  
+  console.log("✨ All 6 core collections synced successfully.");
 }
 
 main()

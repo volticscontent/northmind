@@ -3,6 +3,16 @@ import { CollectionProductCard } from "@/components/CollectionProductCard";
 import Link from "next/link";
 import { ChevronRight } from "lucide-react";
 import { Footer } from "@/components/Footer";
+import { Metadata } from "next";
+
+export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+  const decodedName = decodeURIComponent(params.collection).replace(/-/g, " ");
+  
+  return {
+    title: `${decodedName.toUpperCase()} Collection | North Mind`,
+    description: `Explore our premium ${decodedName} collection. British heritage craftsmanship for the modern man.`,
+  };
+}
 
 interface PageProps {
   params: {

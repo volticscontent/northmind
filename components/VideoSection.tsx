@@ -4,11 +4,12 @@ import { useCallback } from "react";
 import dynamic from "next/dynamic";
 import { useIsMobile } from "../lib/hooks";
 import { useRouter } from "next/navigation";
+import { ResponsiveVideo } from "./ResponsiveVideo";
 
 // Dynamically import CircularGallery to avoid SSR issues with OGL
 const CircularGallery = dynamic(() => import("./effects/mobile/CircularGallery"), {
   ssr: false,
-  loading: () => <div className="w-full h-full bg-black/20 animate-pulse" />
+  loading: () => <div className="w-full h-full bg-black/20 animate-pulse" />,
 });
 
 interface VideoSectionProps {
@@ -38,16 +39,13 @@ export function VideoSection({ collections = [] }: VideoSectionProps) {
 
   return (
     <section className="relative w-full h-[60vh] md:h-screen overflow-hidden bg-black flex items-center justify-center">
-      {/* Background Video */}
-      <video
-        autoPlay
-        muted
-        loop
-        playsInline
+      {/* Background Video - mobile gets compressed version */}
+      <ResponsiveVideo
+        desktopSrc="/assets/video_section.mp4"
+        mobileSrc="/assets/video_section-mobile.mp4"
+        poster="/assets/video_section-poster.jpg"
         className="absolute inset-0 w-full h-full object-cover opacity-30 grayscale contrast-125 z-0"
-      >
-        <source src="/assets/video_section.mp4" type="video/mp4" />
-      </video>
+      />
 
       {/* Interactive Gallery Layer */}
       <div className="relative z-20 w-full h-full flex flex-col items-center justify-center">

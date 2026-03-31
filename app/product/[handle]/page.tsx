@@ -3,6 +3,25 @@ import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { ProductDetail } from "@/components/ProductDetail";
 import { notFound } from "next/navigation";
+import { Metadata } from "next";
+
+export async function generateMetadata({ params }: { params: { handle: string } }): Promise<Metadata> {
+  const product = await getProductByHandle(params.handle);
+
+  if (!product) {
+    return {
+      title: "Product Not Found | North Mind",
+    };
+  }
+
+  return {
+    title: `${product.title} | North Mind Premium Heritage`,
+    description: `Shop the ${product.title} from North Mind. ${product.collection} crafted for durability and contemporary british style.`,
+    openGraph: {
+      images: [product.images[0]],
+    },
+  };
+}
 
 export async function generateStaticParams() {
   const products = await getProducts();

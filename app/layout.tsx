@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Plus_Jakarta_Sans, Inter } from "next/font/google";
 import "./globals.css";
 import Script from "next/script";
@@ -14,9 +14,22 @@ const plusJakartaSans = Plus_Jakarta_Sans({
   variable: "--font-plus-jakarta-sans",
 });
 
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 5,
+  viewportFit: 'cover',
+  themeColor: '#0a0a09',
+};
+
 export const metadata: Metadata = {
+  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || "https://northmind.uk"),
   title: "North Mind | Premium British Heritage",
-  description: "Moda masculina premium com estética British Heritage.",
+  description: "Premium British Heritage menswear. Crafted for durability and contemporary sophistication.",
+  other: {
+    'apple-mobile-web-app-capable': 'yes',
+    'apple-mobile-web-app-status-bar-style': 'black-translucent',
+  },
 };
 
 export default function RootLayout({
@@ -27,6 +40,9 @@ export default function RootLayout({
   return (
     <html lang="en" className={cn("dark", "font-sans", inter.variable)}>
       <head>
+        <link rel="apple-touch-icon" href="/assets/logo.svg" />
+      </head>
+      <body className={`${plusJakartaSans.variable} antialiased font-sans`}>
         {/* UTMify */}
         <Script 
           src="https://cdn.utmify.com.br/scripts/utms/latest.js" 
@@ -61,8 +77,7 @@ export default function RootLayout({
             }(window, document);
           `}
         </Script>
-      </head>
-      <body className={`${plusJakartaSans.variable} antialiased font-sans`}>
+
         <AuthContext>
           <CartProvider>
             {children}

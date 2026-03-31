@@ -9,6 +9,13 @@ export interface Product {
   collection: string;
   description: string;
   images: string[];
+  publicado: boolean;
+  opcoesTamanho: string[];
+  opcoesCor?: { name: string; hex: string }[];
+  highlights?: { icon: string; title: string; text: string }[];
+  mediaAvaliacoes?: number;
+  totalAvaliacoes?: number;
+  videos: string[];
 }
 
 export interface Collection {

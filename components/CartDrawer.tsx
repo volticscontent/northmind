@@ -4,6 +4,7 @@ import { useCart } from "@/lib/CartContext";
 
 import { X, Minus, Plus, ShoppingBag, Lock, CheckCircle } from "lucide-react";
 import Link from "next/link";
+import { useEffect } from "react";
 
 export function CartDrawer() {
   const {
@@ -18,6 +19,29 @@ export function CartDrawer() {
 
   if (!isDrawerOpen) return null;
 
+  return (
+    <CartDrawerInner />
+  );
+}
+
+function CartDrawerInner() {
+  const {
+    cart,
+    totalPrice,
+    isDrawerOpen,
+    setIsDrawerOpen,
+    removeFromCart,
+    decreaseQuantity,
+    addToCart,
+  } = useCart();
+
+  // Lock body scroll when drawer is open
+  useEffect(() => {
+    document.body.classList.add("drawer-open");
+    return () => {
+      document.body.classList.remove("drawer-open");
+    };
+  }, []);
   return (
     <div className="fixed inset-0 z-[100] flex justify-end">
       {/* Overlay */}
@@ -40,7 +64,8 @@ export function CartDrawer() {
           </div>
           <button
             onClick={() => setIsDrawerOpen(false)}
-            className="p-3 text-white/100 hover:text-white transition-colors group"
+            className="p-3 text-white/100 hover:text-white transition-colors group min-h-[44px] min-w-[44px] flex items-center justify-center"
+            aria-label="Close cart"
           >
             <X
               size={24}
@@ -108,18 +133,20 @@ export function CartDrawer() {
                           onClick={() =>
                             decreaseQuantity(item.id, item.selectedSize)
                           }
-                          className="p-2 text-white/20 hover:text-white transition-colors"
+                          className="p-3 text-white/20 hover:text-white active:text-accent transition-colors min-h-[44px] min-w-[44px] flex items-center justify-center"
+                          aria-label="Decrease quantity"
                         >
-                          <Minus size={10} />
+                          <Minus size={14} />
                         </button>
                         <span className="px-4 text-[10px] font-black text-white">
                           {item.quantity}
                         </span>
                         <button
                           onClick={() => addToCart(item, item.selectedSize)}
-                          className="p-2 text-white/20 hover:text-white transition-colors"
+                          className="p-3 text-white/20 hover:text-white active:text-accent transition-colors min-h-[44px] min-w-[44px] flex items-center justify-center"
+                          aria-label="Increase quantity"
                         >
-                          <Plus size={10} />
+                          <Plus size={14} />
                         </button>
                       </div>
                       <span className="text-xs font-bold text-white">
