@@ -37,6 +37,9 @@
   ],
   "exclude": [
     "node_modules",
-    "backend"
+    "backend",
+    "check-admin.ts",
+    "test-db.ts",
+    "prisma.config.ts"
   ]
 }
