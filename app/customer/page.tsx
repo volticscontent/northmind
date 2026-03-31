@@ -24,15 +24,61 @@ export default async function DashboardPage() {
     redirect("/login");
   }
 
-  // Admins devem acessar /admin, não /customer
-  if ((session?.user as any)?.type === "ADMIN") {
-    redirect("/admin");
+  let user, productsDict;
+  try {
+    const res = await fetch(`${API_URL}/api/admin/customer/${session.user.email}`, { 
+      cache: "no-store",
+      headers: {
+        Authorization: `Bearer ${(session?.user as any)?.token}`
+      }
+    });
+    
+    if (!res.ok) {
+        console.error(`Customer API failed with status: ${res.status}`);
+        return (
+          <div className="min-h-screen bg-black flex items-center justify-center p-6 text-center">
+            <div className="max-w-md space-y-6">
+              <ShoppingBag size={48} className="mx-auto text-white/20" />
+              <h1 className="text-2xl font-light">Account <span className="font-medium text-accent">Not Found</span></h1>
+              <p className="text-sm text-white/40 leading-relaxed">
+                We couldn't find a customer profile for <span className="text-white font-medium">{session.user.email}</span>. 
+                This usually happens if you haven't placed an order yet using this account.
+              </p>
+              <div className="pt-4 flex flex-col gap-3">
+                <Link href="/" className="px-8 py-4 bg-white text-black text-[10px] font-black uppercase tracking-widest rounded-xl hover:bg-accent transition-colors">
+                  Go to Store
+                </Link>
+                <Link href="/api/auth/signout" className="text-[10px] font-black uppercase tracking-widest text-white/30 hover:text-white">
+                  Sign Out
+                </Link>
+              </div>
+            </div>
+          </div>
+        );
+    }
+
+    const data = await res.json();
+    user = data.user;
+    productsDict = data.productsDict;
+  } catch (error) {
+    console.error("Dashboard Load Error:", error);
+    return (
+      <div className="min-h-screen bg-black flex items-center justify-center p-6 text-center">
+        <div className="max-w-md space-y-4">
+          <Clock size={48} className="mx-auto text-rose-500/40" />
+          <h1 className="text-2xl font-light">Connection <span className="font-medium">Error</span></h1>
+          <p className="text-sm text-white/40">The backend server is not responding. Please make sure the backend is running.</p>
+          <button 
+            onClick={() => window.location.reload()}
+            className="mt-6 px-8 py-4 bg-white/5 border border-white/10 text-white text-[10px] font-black uppercase tracking-widest rounded-xl hover:bg-white/10 transition-colors"
+          >
+            Retry Connection
+          </button>
+        </div>
+      </div>
+    );
   }
 
-  const res = await fetch(`${API_URL}/api/admin/customer/${session.user.email}`, { cache: "no-store" });
-  if (!res.ok) return null;
-  
-  const { user, productsDict } = await res.json();
   if (!user) return null;
 
   return (

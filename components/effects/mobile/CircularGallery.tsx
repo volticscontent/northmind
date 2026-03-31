@@ -422,6 +422,8 @@ class App {
 
   isDown: boolean = false;
   start: number = 0;
+  startX: number = 0;
+  startY: number = 0;
   startTime: number = 0;
 
   constructor(
@@ -547,7 +549,15 @@ class App {
     this.isDown = true;
     this.startTime = Date.now();
     this.scroll.position = this.scroll.current;
-    this.start = 'touches' in e ? e.touches[0].clientX : e.clientX;
+    
+    if ('touches' in e) {
+      this.startX = e.touches[0].clientX;
+      this.startY = e.touches[0].clientY;
+    } else {
+      this.startX = (e as MouseEvent).clientX;
+      this.startY = (e as MouseEvent).clientY;
+    }
+    this.start = this.startX;
     
     this.updateMouse(e);
   }
@@ -560,7 +570,23 @@ class App {
   }
 
   onTouchUp(e: MouseEvent | TouchEvent) {
-    const isClick = Date.now() - this.startTime < 200;
+    const isWithinTime = Date.now() - this.startTime < 300;
+    
+    let endX: number, endY: number;
+    if ('touches' in e) {
+      const touch = e.changedTouches[0] || (e as TouchEvent).touches[0];
+      endX = touch.clientX;
+      endY = touch.clientY;
+    } else {
+      endX = (e as MouseEvent).clientX;
+      endY = (e as MouseEvent).clientY;
+    }
+
+    const dist = Math.sqrt(
+      Math.pow(endX - this.startX, 2) + Math.pow(endY - this.startY, 2)
+    );
+    
+    const isClick = isWithinTime && dist < 10;
     
     if (this.isDown && isClick && this.onItemClick) {
       this.updateMouse(e);

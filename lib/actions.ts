@@ -21,6 +21,20 @@ export async function getReviews(produtoId: string) {
   }
 }
 
+export async function getOrders() {
+  const session = await getServerSession(authOptions);
+  if ((session?.user as any)?.type !== "ADMIN") throw new Error("Unauthorized Admin Only");
+
+  const res = await fetch(`${API_URL}/api/orders`, {
+    cache: "no-store",
+    headers: {
+      Authorization: `Bearer ${(session?.user as any)?.token}`,
+    },
+  });
+  if (!res.ok) throw new Error("Failed to fetch orders");
+  return res.json();
+}
+
 export async function canUserReview(produtoId: string) {
   const session = await getServerSession(authOptions);
   if (!session?.user?.email) return false;
@@ -63,7 +77,15 @@ export async function addReview(data: {
  */
 
 export async function getAdminStats() {
-  const res = await fetch(`${API_URL}/api/admin/stats`, { cache: "no-store" });
+  const session = await getServerSession(authOptions);
+  if ((session?.user as any)?.type !== "ADMIN") throw new Error("Unauthorized Admin Only");
+
+  const res = await fetch(`${API_URL}/api/admin/stats`, { 
+    cache: "no-store",
+    headers: {
+      Authorization: `Bearer ${(session?.user as any)?.token}`,
+    },
+  });
   if (!res.ok) return { totalOrders: 0, totalRevenue: 0, totalUsers: 0, recentOrders: [] };
   return res.json();
 }
@@ -74,7 +96,10 @@ export async function updateOrderStatus(id: string, status: string) {
 
   const res = await fetch(`${API_URL}/api/orders/${id}/status`, {
     method: "PUT",
-    headers: { "Content-Type": "application/json" },
+    headers: { 
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${(session?.user as any)?.token}`,
+    },
     body: JSON.stringify({ status }),
   });
 
@@ -88,7 +113,10 @@ export async function upsertProduct(data: any) {
 
   const res = await fetch(`${API_URL}/api/products/upsert`, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: { 
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${(session?.user as any)?.token}`,
+    },
     body: JSON.stringify(data),
   });
 
@@ -103,6 +131,9 @@ export async function deleteProduct(id: string) {
 
   const res = await fetch(`${API_URL}/api/products/${id}`, {
     method: "DELETE",
+    headers: {
+      Authorization: `Bearer ${(session?.user as any)?.token}`,
+    },
   });
 
   if (!res.ok) throw new Error("Failed to delete product");

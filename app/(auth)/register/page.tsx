@@ -198,6 +198,7 @@ export default function RegisterPage() {
               </div>
               <input
                 type="password"
+                autoComplete="new-password"
                 required
                 disabled={isLoading}
                 value={formData.password}

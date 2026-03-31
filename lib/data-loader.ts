@@ -14,6 +14,8 @@ export interface Product {
 export interface Collection {
   name: string;
   handle: string;
+  description?: string;
+  image?: string;
 }
 
 export async function getProducts(): Promise<Product[]> {
@@ -46,12 +48,16 @@ export async function getProductsByCollection(collection: string): Promise<Produ
   }
 }
 
-export async function getCollections() {
+export async function getCollections(): Promise<Collection[]> {
   try {
-    const res = await fetch(`${API_URL}/api/products/collections`, { cache: "no-store" });
-    if (!res.ok) return [];
+    const res = await fetch(`${API_URL}/api/collections`, { cache: "no-store" });
+    if (!res.ok) {
+      console.error(`getCollections failed with status: ${res.status}`);
+      return [];
+    }
     return res.json();
-  } catch {
+  } catch (error) {
+    console.error("getCollections fetch error:", error);
     return [];
   }
 }

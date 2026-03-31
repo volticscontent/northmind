@@ -66,6 +66,7 @@ export function AdminLoginForm() {
             <input
               type="password"
               name="password"
+              autoComplete="current-password"
               value={formData.password}
               onChange={handleChange}
               required

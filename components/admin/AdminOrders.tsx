@@ -14,6 +14,7 @@ import {
   Eye
 } from "lucide-react";
 import { API_URL } from "@/lib/api";
+import { getOrders, updateOrderStatus } from "@/lib/actions";
 
 const STATUS_CONFIG: Record<string, { label: string; color: string; bg: string; icon: any }> = {
   PENDENTE: { label: "Pendente", color: "text-amber-400", bg: "bg-amber-500/10", icon: Clock },
@@ -45,11 +46,8 @@ export default function AdminOrdersClient() {
   const fetchOrders = async () => {
     setLoading(true);
     try {
-      const res = await fetch(`${API_URL}/api/orders`);
-      if (res.ok) {
-        const data = await res.json();
-        setOrders(data);
-      }
+      const data = await getOrders();
+      setOrders(data);
     } catch (error) {
       console.error("Failed to fetch orders", error);
     } finally {
@@ -62,14 +60,8 @@ export default function AdminOrdersClient() {
   const handleStatusChange = async (orderId: string, newStatus: string) => {
     setUpdatingId(orderId);
     try {
-      const res = await fetch(`${API_URL}/api/orders/${orderId}/status`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ status: newStatus }),
-      });
-      if (res.ok) {
-        setOrders(orders.map(o => o.id === orderId ? { ...o, status: newStatus } : o));
-      }
+      await updateOrderStatus(orderId, newStatus);
+      setOrders(orders.map(o => o.id === orderId ? { ...o, status: newStatus } : o));
     } catch (error) {
       console.error("Failed to update", error);
     } finally {

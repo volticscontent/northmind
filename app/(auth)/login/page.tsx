@@ -117,6 +117,7 @@ export default function LoginPage() {
               </div>
               <input
                 type="password"
+                autoComplete="current-password"
                 required
                 disabled={isLoading}
                 value={formData.password}

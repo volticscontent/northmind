@@ -98,6 +98,7 @@ export function SetPasswordForm({ userId, orderId, email }: { userId: string, or
           </div>
           <input
             type="password"
+            autoComplete="new-password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             disabled={isLoading}

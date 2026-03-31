@@ -102,18 +102,25 @@ model VerificationToken {
 
 // Produtos (Schema: public)
 model Produto {
-  id            String   @id @default(cuid())
-  nome          String
-  handle        String   @unique
-  descricao     String   @db.Text
-  preco         Float
-  precoOriginal Float?
-  collection    String
-  fotos         String[]
-  comentarios   Comentario[] // Relation to comments
+  id              String   @id @default(cuid())
+  nome            String
+  handle          String   @unique
+  descricao       String   @db.Text
+  preco           Float
+  precoOriginal   Float?
+  collection      String
+  fotoPrincipal   String?  // Foto de destaque (Thumbnail)
+  fotos           String[] // Outras fotos do grid
+  videos          String[] // URLs de vídeos no R2
+  
+  // Avaliações (Manual Override)
+  totalAvaliacoes Int      @default(0)
+  mediaAvaliacoes Float    @default(5.0)
 
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  comentarios     Comentario[] // Relation to actual comments if present
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
 
   @@schema("public")
 }

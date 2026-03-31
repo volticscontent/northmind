@@ -1,5 +1,6 @@
 "use client";
 
+import { useCallback } from "react";
 import dynamic from "next/dynamic";
 import { useIsMobile } from "../lib/hooks";
 import { useRouter } from "next/navigation";
@@ -29,11 +30,11 @@ export function VideoSection({ collections = [] }: VideoSectionProps) {
     href: `/collections/${c.handle}`
   }));
 
-  const handleItemClick = (item: any) => {
+  const handleItemClick = useCallback((item: any) => {
     if (item.href) {
       router.push(item.href);
     }
-  };
+  }, [router]);
 
   return (
     <section className="relative w-full h-[60vh] md:h-screen overflow-hidden bg-black flex items-center justify-center">

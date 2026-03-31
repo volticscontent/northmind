@@ -1,209 +1,158 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Plus, Edit2, Trash2, X } from "lucide-react";
-import { getCollections, upsertCollection, deleteCollection } from "@/lib/actions";
+import { Plus, Edit2, Trash2, X, Folder, Image as ImageIcon } from "lucide-react";
+import { getCollections, deleteCollection, getProducts } from "@/lib/actions";
+import { CollectionForm } from "./CollectionForm";
 
 export function CollectionManager() {
   const [collections, setCollections] = useState<any[]>([]);
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [allProducts, setAllProducts] = useState<any[]>([]);
+  const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingCollection, setEditingCollection] = useState<any | null>(null);
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const [formData, setFormData] = useState({
-    name: "",
-    handle: "",
-    description: "",
-    image: "",
-  });
-
   useEffect(() => {
-    fetchCollections();
+    loadData();
   }, []);
 
-  const fetchCollections = async () => {
+  const loadData = async () => {
     setIsLoading(true);
     setError(null);
     try {
-      const data = await getCollections();
-      setCollections(data);
+      const [cols, prods] = await Promise.all([
+        getCollections(),
+        getProducts()
+      ]);
+      setCollections(cols);
+      setAllProducts(prods);
     } catch (err: any) {
-      console.error("Failed to fetch collections:", err);
-      setError(err.message || "Failed to load collections.");
+      console.error("Failed to load admin data:", err);
+      setError(err.message || "Failed to load management data.");
     } finally {
       setIsLoading(false);
     }
   };
 
-  const openModal = (collection: any = null) => {
-    if (collection) {
-      setEditingCollection(collection);
-      setFormData({
-        name: collection.name,
-        handle: collection.handle,
-        description: collection.description || "",
-        image: collection.image || "",
-      });
-    } else {
-      setEditingCollection(null);
-      setFormData({
-        name: "",
-        handle: "",
-        description: "",
-        image: "",
-      });
-    }
-    setIsModalOpen(true);
+  const openForm = (collection: any = null) => {
+    setEditingCollection(collection);
+    setIsFormOpen(true);
   };
 
-  const closeModal = () => {
-    setIsModalOpen(false);
+  const closeForm = () => {
+    setIsFormOpen(false);
     setEditingCollection(null);
-    setFormData({
-      name: "",
-      handle: "",
-      description: "",
-      image: "",
-    });
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsSubmitting(true);
-    setError(null);
-    try {
-      const payload = {
-        id: editingCollection?.id,
-        name: formData.name,
-        handle: formData.handle,
-        description: formData.description,
-        image: formData.image,
-      };
-      await upsertCollection(payload);
-      fetchCollections(); // Re-fetch collections to get the latest data
-      closeModal();
-    } catch (err: any) {
-      console.error("Error saving collection:", err);
-      setError(err.message || "Error saving collection.");
-    } finally {
-      setIsSubmitting(false);
-    }
+    loadData(); // Refresh list to show changes
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm("Are you sure you want to delete this collection?")) return;
-    setIsSubmitting(true);
-    setError(null);
+    if (!confirm("Are you sure you want to delete this collection? This action is irreversible.")) return;
     try {
       await deleteCollection(id);
-      fetchCollections(); // Re-fetch collections
+      loadData();
     } catch (err: any) {
       console.error("Error deleting collection:", err);
-      setError(err.message || "Error deleting collection.");
-    } finally {
-      setIsSubmitting(false);
+      alert(err.message || "Error deleting collection.");
     }
   };
 
+  if (isFormOpen) {
+    return (
+      <CollectionForm 
+        collection={editingCollection} 
+        products={allProducts} 
+        onClose={closeForm} 
+      />
+    );
+  }
+
   return (
-    <div className="space-y-8">
+    <div className="space-y-8 animate-in fade-in duration-500">
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-3xl font-black uppercase tracking-tighter text-white mb-2">
             Collection Management
           </h2>
           <p className="text-xs font-bold uppercase tracking-widest text-white/40">
-            {collections.length} collections currently active
+            Design your storefront hierarchy and category assets
           </p>
         </div>
         <button 
-          onClick={() => openModal()}
-          className="flex items-center gap-2 px-6 py-3 bg-white text-black text-[10px] font-black uppercase tracking-widest rounded-full hover:bg-white/90 transition-all"
+          onClick={() => openForm()}
+          className="flex items-center gap-2 px-6 py-3 bg-white text-black text-[10px] font-black uppercase tracking-widest rounded-full hover:bg-white/90 transition-all shadow-xl shadow-white/5"
         >
           <Plus size={16} />
-          Add New Collection
+          Create New Category
         </button>
       </div>
 
+      {error && (
+        <div className="p-4 bg-rose-500/10 border border-rose-500/20 rounded-xl text-rose-500 text-[10px] font-black uppercase tracking-widest text-center">
+          {error}
+        </div>
+      )}
+
       {isLoading ? (
-        <p className="text-white/40 text-center py-8">Loading collections...</p>
-      ) : error ? (
-        <p className="text-red-500 text-center py-8">Error: {error}</p>
+        <div className="py-20 text-center space-y-4">
+           <div className="w-8 h-8 border-2 border-white/20 border-t-white rounded-full animate-spin mx-auto" />
+           <p className="text-[10px] font-black uppercase tracking-widest text-white/20">Syncing Catalog...</p>
+        </div>
       ) : (
-        <div className="space-y-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {collections.length === 0 ? (
-            <p className="text-white/40 text-center py-8">No collections found. Add a new one!</p>
+            <div className="col-span-full py-20 text-center bg-white/[0.02] border border-white/5 rounded-3xl">
+               <Folder size={40} className="mx-auto text-white/10 mb-4" />
+               <p className="text-[10px] font-black uppercase tracking-widest text-white/20">Empty Territory</p>
+            </div>
           ) : (
             collections.map((collection) => (
-              <div key={collection.id} className="flex items-center justify-between p-4 bg-black border border-white/5 rounded-lg group hover:border-white/20 transition-all">
-                <div>
-                  <h3 className="text-sm font-bold text-white line-clamp-1">{collection.name}</h3>
-                  <p className="text-xs text-white/40">{collection.handle}</p>
+              <div key={collection.id} className="group relative bg-[#0A0A0A] border border-white/5 rounded-3xl overflow-hidden hover:border-white/20 transition-all shadow-2xl">
+                {/* Image Preview */}
+                <div className="aspect-[2/1] relative overflow-hidden bg-white/5">
+                  {collection.image ? (
+                    <img src={collection.image} alt="" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center">
+                       <ImageIcon size={24} className="text-white/10" />
+                    </div>
+                  )}
+                  <div className="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent" />
+                  
+                  {/* Stats Badge */}
+                  <div className="absolute top-4 left-4 px-3 py-1 bg-black/60 backdrop-blur-md rounded-full border border-white/10 text-[8px] font-black uppercase tracking-widest text-white/60">
+                    {collection.products?.length || 0} Pieces
+                  </div>
                 </div>
-                <div className="flex items-center gap-2">
-                  <button 
-                    onClick={() => openModal(collection)}
-                    className="p-2 bg-white/5 rounded-lg hover:bg-white/10 text-white/60 hover:text-white transition-all"
-                  >
-                    <Edit2 size={14} />
-                  </button>
-                  <button 
-                    onClick={() => handleDelete(collection.id)}
-                    className="p-2 bg-rose-500/10 rounded-lg hover:bg-rose-500/20 text-rose-500 transition-all"
-                  >
-                    <Trash2 size={14} />
-                  </button>
+
+                <div className="p-6 pt-2">
+                  <div className="flex items-start justify-between gap-4">
+                    <div className="flex-1">
+                      <h3 className="text-sm font-black uppercase tracking-tight text-white mb-1 group-hover:text-accent transition-colors">
+                        {collection.name}
+                      </h3>
+                      <p className="text-[9px] font-mono text-white/30 truncate">/{collection.handle}</p>
+                    </div>
+                    
+                    <div className="flex items-center gap-2">
+                        <button 
+                            onClick={() => openForm(collection)}
+                            className="p-2.5 bg-white/5 rounded-xl hover:bg-white/10 text-white/40 hover:text-white transition-all"
+                        >
+                            <Edit2 size={14} />
+                        </button>
+                        <button 
+                            onClick={() => handleDelete(collection.id)}
+                            className="p-2.5 bg-rose-500/5 rounded-xl hover:bg-rose-500/20 text-rose-500/40 hover:text-rose-500 transition-all"
+                        >
+                            <Trash2 size={14} />
+                        </button>
+                    </div>
+                  </div>
                 </div>
               </div>
             ))
           )}
-        </div>
-      )}
-
-      {/* Modal */}
-      {isModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <div className="absolute inset-0 bg-black/80 backdrop-blur-sm" onClick={closeModal} />
-          <div className="relative bg-[#0a0a0a] border border-white/10 rounded-3xl w-full max-w-md max-h-[90vh] overflow-y-auto p-8 shadow-2xl">
-            <div className="flex items-center justify-between mb-8">
-              <h3 className="text-xl font-black uppercase tracking-tight text-white">
-                {editingCollection ? "Edit Collection" : "New Collection"}
-              </h3>
-              <button onClick={closeModal} className="p-2 hover:bg-white/5 rounded-full transition-colors">
-                <X size={20} className="text-white/40 hover:text-white" />
-              </button>
-            </div>
-
-            <form onSubmit={handleSubmit} className="space-y-6">
-              <div className="space-y-2">
-                <label className="text-[10px] font-black uppercase tracking-widest text-white/40">Collection Name</label>
-                <input required value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} className="w-full bg-white/5 border border-white/10 rounded-xl p-3 text-xs text-white focus:outline-none focus:border-accent" />
-              </div>
-              <div className="space-y-2">
-                <label className="text-[10px] font-black uppercase tracking-widest text-white/40">Collection Handle</label>
-                <input required value={formData.handle} onChange={e => setFormData({...formData, handle: e.target.value})} placeholder="e.g. summer-collection" className="w-full bg-white/5 border border-white/10 rounded-xl p-3 text-xs text-white focus:outline-none focus:border-accent" />
-              </div>
-              <div className="space-y-2">
-                <label className="text-[10px] font-black uppercase tracking-widest text-white/40">Description</label>
-                <textarea value={formData.description} onChange={e => setFormData({...formData, description: e.target.value})} className="w-full bg-white/5 border border-white/10 rounded-xl p-3 text-xs text-white min-h-[80px] focus:outline-none focus:border-accent" />
-              </div>
-              <div className="space-y-2">
-                <label className="text-[10px] font-black uppercase tracking-widest text-white/40">Image URL</label>
-                <input value={formData.image} onChange={e => setFormData({...formData, image: e.target.value})} placeholder="e.g. /assets/collection-banner.jpg" className="w-full bg-white/5 border border-white/10 rounded-xl p-3 text-xs text-white focus:outline-none focus:border-accent" />
-              </div>
-
-              <div className="pt-4 border-t border-white/5 flex justify-end gap-4">
-                <button type="button" onClick={closeModal} className="px-6 py-3 text-[10px] font-black uppercase tracking-widest text-white/40 hover:text-white transition-colors">
-                  Cancel
-                </button>
-                <button type="submit" disabled={isSubmitting} className="px-8 py-3 bg-white text-black text-[10px] font-black uppercase tracking-widest rounded-full hover:bg-white/90 disabled:opacity-50 transition-all">
-                  {isSubmitting ? "Saving..." : "Save Collection"}
-                </button>
-              </div>
-            </form>
-          </div>
         </div>
       )}
     </div>
