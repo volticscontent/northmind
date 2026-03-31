@@ -17,25 +17,41 @@ export interface Collection {
 }
 
 export async function getProducts(): Promise<Product[]> {
-  const res = await fetch(`${API_URL}/api/products`, { cache: "no-store" });
-  if (!res.ok) return [];
-  return res.json();
+  try {
+    const res = await fetch(`${API_URL}/api/products`, { cache: "no-store" });
+    if (!res.ok) return [];
+    return res.json();
+  } catch {
+    return [];
+  }
 }
 
 export async function getProductByHandle(handle: string): Promise<Product | undefined> {
-  const res = await fetch(`${API_URL}/api/products/handle/${handle}`, { cache: "no-store" });
-  if (!res.ok) return undefined;
-  return res.json();
+  try {
+    const res = await fetch(`${API_URL}/api/products/handle/${handle}`, { cache: "no-store" });
+    if (!res.ok) return undefined;
+    return res.json();
+  } catch {
+    return undefined;
+  }
 }
 
 export async function getProductsByCollection(collection: string): Promise<Product[]> {
-  const res = await fetch(`${API_URL}/api/products/collection/${collection}`, { cache: "no-store" });
-  if (!res.ok) return [];
-  return res.json();
+  try {
+    const res = await fetch(`${API_URL}/api/products/collection/${collection}`, { cache: "no-store" });
+    if (!res.ok) return [];
+    return res.json();
+  } catch {
+    return [];
+  }
 }
 
 export async function getCollections() {
-  const res = await fetch(`${API_URL}/api/products/collections`, { cache: "no-store" });
-  if (!res.ok) return [];
-  return res.json();
+  try {
+    const res = await fetch(`${API_URL}/api/products/collections`, { cache: "no-store" });
+    if (!res.ok) return [];
+    return res.json();
+  } catch {
+    return [];
+  }
 }
