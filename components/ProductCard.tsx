@@ -24,19 +24,19 @@ export function ProductCard({ product }: ProductCardProps) {
           className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
         />
         {discount > 0 && (
-          <div className="absolute top-2 left-2 z-10 bg-accent text-black text-[9px] font-black px-2 py-1 uppercase tracking-luxury">
+          <div className="absolute top-2 left-2 z-10 bg-black/90 text-white text-[9px] font-black px-2 py-1 uppercase tracking-luxury">
             -{discount}% OFF
           </div>
         )}
       </div>
 
       <div className="p-5 flex flex-col flex-grow bg-black/40">
-        <h3 className="text-[10px] md:text-[11px] font-bold uppercase tracking-luxury text-white/50 group-hover:text-accent transition-colors duration-300 min-h-[40px] leading-relaxed">
+        <h3 className="text-[10px] md:text-[11px] font-bold uppercase tracking-luxury text-white/90 group-hover:text-white transition-colors duration-300 min-h-[40px] leading-relaxed">
           {product.title}
         </h3>
         <div className="mt-4 flex items-center justify-between">
           <div className="flex justify-between items-center w-full gap-3">
-            <span className="text-sm md:text-lg  text-white/20 line-through">
+            <span className="text-sm md:text-lg  text-white/40 line-through">
               £{product.originalPrice.toFixed(2)}
             </span>
             <span className="text-[10px] md:text-xl font-bold text-white">

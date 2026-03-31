@@ -11,11 +11,11 @@ export function CollectionProductCard({ product }: CollectionProductCardProps) {
   const discount = Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100);
 
   return (
-    <Link 
+    <Link
       href={`/product/${product.handle}`}
       className="group flex flex-col no-underline bg-[#F4F4F4] transition-opacity hover:opacity-95"
     >
-      <div className="relative w-full aspect-[4/5] overflow-hidden flex items-center justify-center p-4">
+      <div className="relative w-full aspect-[4/5] overflow-hidden flex items-center justify-center">
         <img
           src={product.images[0]}
           alt={product.title}
@@ -27,7 +27,7 @@ export function CollectionProductCard({ product }: CollectionProductCardProps) {
           </div>
         )}
       </div>
-      
+
       <div className="px-5 pb-6 pt-2 flex flex-col flex-grow">
         <h3 className="text-[13px] font-bold text-[#111827] mb-2 leading-tight group-hover:underline decoration-1 underline-offset-2">
           {product.title}

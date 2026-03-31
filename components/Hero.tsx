@@ -21,10 +21,7 @@ export function Hero() {
 
       {/* Content */}
       <div className="relative z-10 text-center px-4 max-w-4xl animate-fade-in">
-        <span className="inline-block text-[10px] md:text-xs font-bold tracking-[0.5em] uppercase text-accent mb-6">
-          Established 2026
-        </span>
-        <h1 className="text-4xl md:text-8xl font-black uppercase tracking-tighter mb-8 leading-[0.9] text-white">
+        <h1 className="text-6xl md:text-8xl font-black uppercase tracking-tighter mb-8 leading-[0.9] text-white">
           British Heritage <br />
           <span className="gold-stroke">Premium</span>
         </h1>
@@ -34,11 +31,11 @@ export function Hero() {
         <div className="flex flex-col md:flex-row items-center justify-center gap-6 w-full md:w-auto">
           <Link
             href="/collections/jackets"
-            className="btn-premium block w-full md:w-auto text-center"
+            className="btn-premium bg-white block w-full md:w-auto text-center"
           >
             Shop Collection
           </Link>
-          <Link href="/collections/silent-warmth" className="text-[10px] font-bold uppercase tracking-luxury text-white/40 hover:text-white transition-all duration-300 px-6 py-4">
+          <Link href="/collections/silent-warmth" className="text-[10px] font-bold uppercase tracking-luxury text-white/80 hover:text-white transition-all duration-300 px-6 py-4">
             View Lookbook
           </Link>
         </div>

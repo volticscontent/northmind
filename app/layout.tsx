@@ -5,6 +5,7 @@ import Script from "next/script";
 import { CartProvider } from "@/lib/CartContext";
 import { CartDrawer } from "@/components/CartDrawer";
 import { cn } from "@/lib/utils";
+import AuthContext from "@/components/AuthContext";
 
 const inter = Inter({subsets:['latin'],variable:'--font-sans'});
 
@@ -62,10 +63,12 @@ export default function RootLayout({
         </Script>
       </head>
       <body className={`${plusJakartaSans.variable} antialiased font-sans`}>
-        <CartProvider>
-          {children}
-          <CartDrawer />
-        </CartProvider>
+        <AuthContext>
+          <CartProvider>
+            {children}
+            <CartDrawer />
+          </CartProvider>
+        </AuthContext>
       </body>
     </html>
   );

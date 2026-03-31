@@ -13,6 +13,8 @@ export async function generateStaticParams() {
 
 export default async function ProductPage({ params }: { params: { handle: string } }) {
   const product = await getProductByHandle(params.handle);
+  const products = await getProducts();
+  const allProducts = products.filter(p => p.handle !== params.handle);
 
   if (!product) {
     notFound();
@@ -21,7 +23,7 @@ export default async function ProductPage({ params }: { params: { handle: string
   return (
     <main className="min-h-screen bg-black">
       <Header />
-      <ProductDetail product={product} />
+      <ProductDetail product={product} allProducts={allProducts} />
       <Footer />
     </main>
   );

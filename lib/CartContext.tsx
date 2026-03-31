@@ -11,6 +11,7 @@ interface CartItem extends Product {
 interface CartContextType {
   cart: CartItem[];
   addToCart: (product: Product, size: string) => void;
+  decreaseQuantity: (productId: string, size: string) => void;
   removeFromCart: (productId: string, size: string) => void;
   clearCart: () => void;
   totalItems: number;
@@ -61,6 +62,20 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     setIsDrawerOpen(true);
   };
 
+  const decreaseQuantity = (productId: string, size: string) => {
+    setCart((prev) => {
+      const existing = prev.find((item) => item.id === productId && item.selectedSize === size);
+      if (existing && existing.quantity > 1) {
+        return prev.map((item) =>
+          item.id === productId && item.selectedSize === size
+            ? { ...item, quantity: item.quantity - 1 }
+            : item
+        );
+      }
+      return prev.filter((item) => !(item.id === productId && item.selectedSize === size));
+    });
+  };
+
   const removeFromCart = (productId: string, size: string) => {
     setCart((prev) => prev.filter((item) => !(item.id === productId && item.selectedSize === size)));
   };
@@ -72,7 +87,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
 
   return (
     <CartContext.Provider value={{ 
-      cart, addToCart, removeFromCart, clearCart, 
+      cart, addToCart, decreaseQuantity, removeFromCart, clearCart, 
       totalItems, totalPrice, isDrawerOpen, setIsDrawerOpen 
     }}>
       {children}

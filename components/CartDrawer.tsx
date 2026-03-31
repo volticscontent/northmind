@@ -12,6 +12,7 @@ export function CartDrawer() {
     isDrawerOpen,
     setIsDrawerOpen,
     removeFromCart,
+    decreaseQuantity,
     addToCart,
   } = useCart();
 
@@ -30,10 +31,10 @@ export function CartDrawer() {
         <div className="p-8 flex items-center justify-between border-b border-white/5">
           <div className="flex items-center gap-4">
             <ShoppingBag size={18} className="text-accent" />
-            <h2 className="text-xs font-black uppercase tracking-luxury text-white">
+            <h2 className="text-xl font-black uppercase tracking-luxury text-white">
               Your Selection
             </h2>
-            <span className="text-[10px] font-bold text-white/20 bg-white/5 px-2 py-1 rounded-full">
+            <span className="text-[10px] font-bold text-white/100 bg-white/10 px-2 py-1 rounded-full">
               {cart.length}
             </span>
           </div>
@@ -85,19 +86,19 @@ export function CartDrawer() {
                   </div>
                   <div className="flex-grow flex flex-col pt-1">
                     <div className="flex justify-between items-start mb-2">
-                      <h4 className="text-[10px] font-black uppercase tracking-premium text-white/80 group-hover:text-accent transition-colors">
+                      <h4 className="text-[10px] font-black uppercase tracking-premium text-white group-hover:text-accent transition-colors">
                         {item.title}
                       </h4>
                       <button
                         onClick={() =>
                           removeFromCart(item.id, item.selectedSize)
                         }
-                        className="text-white/100 hover:text-red-500 transition-colors"
+                        className="text-white hover:text-red-500 transition-colors"
                       >
                         <X size={14} />
                       </button>
                     </div>
-                    <p className="text-[9px] text-white/30 uppercase font-black tracking-luxury mb-auto">
+                    <p className="text-[9px] text-white/80 uppercase font-black tracking-luxury mb-auto">
                       Size: {item.selectedSize}
                     </p>
 
@@ -105,7 +106,7 @@ export function CartDrawer() {
                       <div className="flex items-center border border-white/5 bg-black/40">
                         <button
                           onClick={() =>
-                            removeFromCart(item.id, item.selectedSize)
+                            decreaseQuantity(item.id, item.selectedSize)
                           }
                           className="p-2 text-white/20 hover:text-white transition-colors"
                         >
@@ -141,9 +142,6 @@ export function CartDrawer() {
               </span>
             </div>
             <div className="w-full text-center">
-              <h1 className="pb-1 text-sm font-light text-white/50">
-                Taxes, Discounts and shipping calculated at checkout
-              </h1>
               <Link
                 href="/checkout"
                 onClick={() => setIsDrawerOpen(false)}

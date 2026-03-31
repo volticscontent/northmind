@@ -6,6 +6,10 @@ const nextConfig = {
         protocol: 'https',
         hostname: 'cdn.shopify.com',
       },
+      {
+        protocol: 'https',
+        hostname: 'pub-7cbb9b15243a4822bb8f1cab2913dd00.r2.dev',
+      },
     ],
   },
 };

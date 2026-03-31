@@ -1,12 +1,22 @@
-"use client";
-
 import React, { useState, useEffect } from "react";
-import {
-  PaymentElement,
-  useStripe,
-  useElements,
-} from "@stripe/react-stripe-js";
-import { Search, Lock } from "lucide-react";
+import { PaymentElement, useStripe, useElements } from "@stripe/react-stripe-js";
+import { Search, Lock, ChevronDown } from "lucide-react";
+import { useSession } from "next-auth/react";
+import axios from "axios";
+import Link from "next/link";
+import { motion, AnimatePresence } from "framer-motion";
+import { API_URL } from "@/lib/api";
+
+const countries = [
+  { code: "+44", flag: "🇬🇧", name: "UK" },
+  { code: "+55", flag: "🇧🇷", name: "Brazil" },
+  { code: "+1", flag: "🇺🇸", name: "USA" },
+  { code: "+351", flag: "🇵🇹", name: "Portugal" },
+  { code: "+33", flag: "🇫🇷", name: "France" },
+  { code: "+49", flag: "🇩🇪", name: "Germany" },
+  { code: "+39", flag: "🇮🇹", name: "Italy" },
+  { code: "+34", flag: "🇪🇸", name: "Spain" },
+];
 
 export type OrderItem = {
   id: string;
@@ -25,10 +35,14 @@ interface CheckoutFormProps {
 export default function CheckoutForm({ items }: CheckoutFormProps) {
   const stripe = useStripe();
   const elements = useElements();
+  const { data: session, status } = useSession();
 
   // Estados do formulário (Contato e Endereço)
-  const [emailOrPhone, setEmailOrPhone] = useState("");
-  const [country, setCountry] = useState("BR");
+  const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
+  const [showCountrySelector, setShowCountrySelector] = useState(false);
+  const [selectedCountry, setSelectedCountry] = useState(countries[0]);
+  const [country, setCountry] = useState("UK");
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [address, setAddress] = useState("");
@@ -37,6 +51,19 @@ export default function CheckoutForm({ items }: CheckoutFormProps) {
   const [cep, setCep] = useState("");
   const [stateUF, setStateUF] = useState("");
   const [saveInfo, setSaveInfo] = useState(false);
+
+  // Auto-fill form if session exists
+  useEffect(() => {
+    if (session?.user) {
+      if (session.user.email) setEmail(session.user.email);
+      // Aqui poderíamos extrair o telefone do banco se disponível, mantemos o fluxo
+      if (session.user.name) {
+        const parts = session.user.name.split(" ");
+        setFirstName(parts[0] || "");
+        setLastName(parts.slice(1).join(" ") || "");
+      }
+    }
+  }, [session]);
 
   // Estados de controle
   const [isLoading, setIsLoading] = useState(false);
@@ -53,11 +80,11 @@ export default function CheckoutForm({ items }: CheckoutFormProps) {
   );
   const total = subtotal - totalDiscounts;
 
-  // Formatação de moeda
+  // Formatação de moeda - British Heritage uses GBP
   const formatCurrency = (value: number) => {
-    return new Intl.NumberFormat("pt-BR", {
+    return new Intl.NumberFormat("en-GB", {
       style: "currency",
-      currency: "BRL",
+      currency: "GBP",
     }).format(value);
   };
 
@@ -88,42 +115,49 @@ export default function CheckoutForm({ items }: CheckoutFormProps) {
       return;
     }
 
-    if (
-      !emailOrPhone ||
-      !firstName ||
-      !lastName ||
-      !address ||
-      !city ||
-      !cep
-    ) {
-      setErrorMessage("Por favor, preencha todos os campos obrigatórios.");
-      return;
-    }
-
     setIsLoading(true);
     setErrorMessage("");
 
     try {
-      // Trigger validação de form no PaymentElement antes de seguir
+      // 1. Create Order in Database (PENDENTE/PAGO)
+      const { data: orderResponse } = await axios.post(`${API_URL}/api/orders`, {
+        items,
+        total,
+        status: "PAGO", // Simplificado para este fluxo direto
+        customerInfo: {
+          email,
+          phone,
+          firstName,
+          lastName,
+          address,
+          city,
+          cep,
+          country,
+          stateUF,
+          complement
+        }
+      });
+
+      // 2. Trigger validation
       const { error: submitError } = await elements.submit();
       if (submitError) {
         setErrorMessage(
-          submitError.message || "Erro de validação do pagamento.",
+          submitError.message || "Payment validation error.",
         );
         setIsLoading(false);
         return;
       }
 
-      // Confirma e processa o pagamento com Stripe
+      // 3. Confirm Stripe Payment
       const { error } = await stripe.confirmPayment({
         elements,
         confirmParams: {
-          return_url: `${window.location.origin}/sucesso`,
+          return_url: `${window.location.origin}/checkout/success?o=${orderResponse.id}&u=${orderResponse.userId}`,
           payment_method_data: {
             billing_details: {
               name: `${firstName} ${lastName}`,
-              email: emailOrPhone.includes("@") ? emailOrPhone : undefined,
-              phone: !emailOrPhone.includes("@") ? emailOrPhone : undefined,
+              email: email,
+              phone: `${selectedCountry.code} ${phone}`,
               address: {
                 line1: address,
                 line2: complement || undefined,
@@ -140,14 +174,14 @@ export default function CheckoutForm({ items }: CheckoutFormProps) {
       if (error) {
         if (error.type === "card_error" || error.type === "validation_error") {
           setErrorMessage(
-            error.message || "Ocorreu um erro no cartão/validação.",
+            error.message || "Card/Validation error.",
           );
         } else {
-          setErrorMessage("Ocorreu um erro inesperado.");
+          setErrorMessage("An unexpected error occurred.");
         }
       }
     } catch (err: any) {
-      setErrorMessage("Erro ao processar o pagamento.");
+      setErrorMessage(err.response?.data || "Error processing order.");
     }
 
     setIsLoading(false);
@@ -166,19 +200,81 @@ export default function CheckoutForm({ items }: CheckoutFormProps) {
         <div className="left-content">
           <div className="section-header">
             <h2 className="section-title text-lg">Contact</h2>
-            <a href="#" className="login-link text-lg">
-              Sign in
-            </a>
+            {status !== "authenticated" ? (
+              <Link href="/login?callbackUrl=/checkout" className="login-link text-lg text-black">
+                Sign in
+              </Link>
+            ) : (
+              <span className="text-[10px] font-black uppercase tracking-widest text-black">
+                Logged in as {session?.user?.name?.split(" ")[0]}
+              </span>
+            )}
           </div>
-          <div className="input-group">
-            <input
-              type="text"
-              className="input-field"
-              placeholder="E-mail ou número de celular"
-              value={emailOrPhone}
-              onChange={(e) => setEmailOrPhone(e.target.value)}
-              required
-            />
+
+          <div className="space-y-3">
+            <div className="input-group">
+              <input
+                type="email"
+                className="input-field"
+                placeholder="Email address"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+              />
+            </div>
+
+            <div className="relative flex">
+              <button
+                type="button"
+                onClick={() => setShowCountrySelector(!showCountrySelector)}
+                className="flex items-center gap-2 px-4 bg-black border border-gray-300 rounded-l-md border-r-0 transition-all z-10"
+              >
+                <span className="text-xl">{selectedCountry.flag}</span>
+                <ChevronDown size={14} className={`text-black transition-transform ${showCountrySelector ? 'rotate-180' : ''}`} />
+              </button>
+              <input
+                type="tel"
+                className="input-field rounded-l-none"
+                placeholder="Phone number"
+                value={phone}
+                onChange={(e) => setPhone(e.target.value)}
+                required
+              />
+
+              <AnimatePresence>
+                {showCountrySelector && (
+                  <>
+                    <div className="fixed inset-0 z-40" onClick={() => setShowCountrySelector(false)} />
+                    <motion.div
+                      initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                      animate={{ opacity: 1, y: 0, scale: 1 }}
+                      exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                      className="absolute top-full left-0 mt-2 w-56 bg-white border border-gray-200 rounded-xl overflow-hidden z-50 shadow-2xl ring-1 ring-black ring-opacity-5"
+                    >
+                      <div className="max-h-60 overflow-y-auto py-1">
+                        {countries.map((c) => (
+                          <button
+                            key={c.code}
+                            type="button"
+                            onClick={() => {
+                              setSelectedCountry(c);
+                              setShowCountrySelector(false);
+                            }}
+                            className="w-full flex items-center justify-between px-4 py-3 text-black hover:bg-black hover:text-white transition-colors"
+                          >
+                            <div className="flex items-center gap-3">
+                              <span className="text-xl">{c.flag}</span>
+                              <span className="text-sm font-medium">{c.name}</span>
+                            </div>
+                            <span className="text-xs opacity-50 font-mono">{c.code}</span>
+                          </button>
+                        ))}
+                      </div>
+                    </motion.div>
+                  </>
+                )}
+              </AnimatePresence>
+            </div>
           </div>
 
           <div className="section-header mt-8">
@@ -275,7 +371,7 @@ export default function CheckoutForm({ items }: CheckoutFormProps) {
             <div className="shipping-left">
               <span className="shipping-method">Frete Grátis</span>
             </div>
-            <span className="shipping-price">GRÁTIS</span>
+            <span className="shipping-price">FREE</span>
           </div>
 
           <div className="section-header mt-8 flex-col-start">
@@ -334,8 +430,8 @@ export default function CheckoutForm({ items }: CheckoutFormProps) {
       <div className="right-col">
         <div className="right-content">
           <div className="order-items">
-            {items.map((item) => (
-              <div key={item.id} className="item-row">
+            {items.map((item, index) => (
+              <div key={`${item.id}-${index}`} className="item-row">
                 <div className="item-image-wrapper">
                   <div className="item-badge">{item.quantity}</div>
                   <img
@@ -371,7 +467,7 @@ export default function CheckoutForm({ items }: CheckoutFormProps) {
             </div>
             <div className="total-row">
               <span className="total-label">Frete</span>
-              <span className="total-value">GRÁTIS</span>
+              <span className="total-value green">GRÁTIS</span>
             </div>
             {totalDiscounts > 0 && (
               <div className="total-row">
@@ -384,10 +480,11 @@ export default function CheckoutForm({ items }: CheckoutFormProps) {
             <div className="total-row final-total">
               <span className="total-label">Total</span>
               <span className="total-value bold-total">
-                <span className="currency-label">BRL</span>{" "}
+                <span className="currency-label">GBP</span>{" "}
                 {formatCurrency(total)}
               </span>
             </div>
+
           </div>
         </div>
       </div>
@@ -409,6 +506,7 @@ export default function CheckoutForm({ items }: CheckoutFormProps) {
           display: flex;
           justify-content: flex-end;
           border-right: 1px solid #e5e7eb;
+          justify-content: center;
         }
 
         .left-content {
@@ -418,8 +516,8 @@ export default function CheckoutForm({ items }: CheckoutFormProps) {
 
         .right-col {
           flex: 0 0 40%;
-          background-color: #f5f5f5;
-          padding: 64px 40px;
+          background-color: #000000;
+          padding: 64px 30px;
           display: flex;
           justify-content: flex-start;
         }
@@ -447,13 +545,13 @@ export default function CheckoutForm({ items }: CheckoutFormProps) {
         .section-title {
           font-size: 1.125rem; /* text-xl */
           font-weight: 600;
-          color: #374151;
+          color: #374151  ;
           letter-spacing: 0.5px;
           margin: 0;
         }
 
         .login-link {
-          color: #2563eb;
+          color: #000000;
           text-decoration: none;
           font-size: 1.125rem; /* text-lg */
         }
@@ -498,8 +596,8 @@ export default function CheckoutForm({ items }: CheckoutFormProps) {
 
         .input-field:focus {
           outline: none;
-          border-color: #2563eb;
-          box-shadow: 0 0 0 1px #2563eb;
+          border-color: #000000;
+          box-shadow: 0 0 0 1px #000000;
         }
 
         .input-field::placeholder {
@@ -532,47 +630,49 @@ export default function CheckoutForm({ items }: CheckoutFormProps) {
           gap: 10px;
           margin-top: 16px;
           margin-bottom: 8px;
+          color: #000000;
         }
 
         .checkbox-group input[type="checkbox"] {
           width: 16px;
           height: 16px;
           border-radius: 4px;
-          border: 1px solid #d1d5db;
-          accent-color: #2563eb;
+          border: 1px solid #defad9;
+          accent-color: #000000;
           cursor: pointer;
         }
 
         .checkbox-group label {
           font-size: 14px;
-          color: #374151;
+          color: #000000;
           cursor: pointer;
         }
 
         .shipping-card {
-          border: 1px solid #d1d5db;
+          border: 1px solid #d1dbd3;
           border-radius: 6px;
           padding: 16px;
           display: flex;
           justify-content: space-between;
           align-items: center;
-          background-color: #ffffff;
+          background-color: #e4e4e4;
         }
 
         .shipping-card.selected {
-          border-color: #2563eb;
-          background-color: rgba(37, 99, 235, 0.03);
+          border-color: #000000;
+          background-color: rgb(255, 255, 255);
+          backdrop-filter: blur(10px);
         }
 
         .shipping-method {
           font-size: 14px;
-          color: #111827;
+          color: #000000;
         }
 
         .shipping-price {
           font-size: 14px;
           font-weight: 600;
-          color: #111827;
+          color: #1eaa25;
         }
 
         .secure-text {
@@ -598,7 +698,7 @@ export default function CheckoutForm({ items }: CheckoutFormProps) {
 
         .submit-btn {
           width: 100%;
-          background-color: #2563eb;
+          background-color: #000000;
           color: #ffffff;
           border: none;
           border-radius: 6px;
@@ -613,11 +713,13 @@ export default function CheckoutForm({ items }: CheckoutFormProps) {
         }
 
         .submit-btn:hover {
-          background-color: #1d4ed8;
+          background-color: #ffffff;
+          border: 1px solid #1dd81d;
+          color: #000000;
         }
 
         .submit-btn:disabled {
-          background-color: #93c5fd;
+          background-color: #1dd81d;
           cursor: not-allowed;
         }
 
@@ -663,7 +765,7 @@ export default function CheckoutForm({ items }: CheckoutFormProps) {
           width: 64px;
           height: 64px;
           border-radius: 8px;
-          border: 1px solid #d1d5db;
+          border: 1px solid #ffffff;
           background-color: #ffffff;
           padding: 4px;
           box-sizing: border-box;
@@ -681,7 +783,7 @@ export default function CheckoutForm({ items }: CheckoutFormProps) {
           position: absolute;
           top: -8px;
           right: -8px;
-          background-color: rgba(114, 114, 114, 0.9);
+          background-color: black;
           color: white;
           width: 20px;
           height: 20px;
@@ -701,18 +803,18 @@ export default function CheckoutForm({ items }: CheckoutFormProps) {
         .item-name {
           font-size: 14px;
           font-weight: 600;
-          color: #111827;
+          color: white;
           margin-bottom: 4px;
         }
 
         .item-desc {
           font-size: 12px;
-          color: #6b7280;
+          color: white;
         }
 
         .item-price {
           font-size: 14px;
-          color: #111827;
+          color: white;
           text-align: right;
           margin-left: 12px;
           display: flex;
@@ -730,7 +832,7 @@ export default function CheckoutForm({ items }: CheckoutFormProps) {
           gap: 12px;
           margin-bottom: 24px;
           padding-top: 24px;
-          border-top: 1px solid #d1d5db;
+          border-top: 1px solid white;
         }
 
         .coupon-input {
@@ -763,11 +865,15 @@ export default function CheckoutForm({ items }: CheckoutFormProps) {
           justify-content: space-between;
           margin-bottom: 12px;
           font-size: 14px;
-          color: #4b5563;
+          color: white;
         }
 
         .total-value {
-          color: #111827;
+          color: white;
+        }
+
+        .total-value.green {
+          color: #14f366;
         }
 
         .savings-value {
@@ -781,7 +887,7 @@ export default function CheckoutForm({ items }: CheckoutFormProps) {
 
         .final-total .total-label {
           font-size: 16px;
-          color: #111827;
+          color: #ffffff;
         }
 
         .bold-total {
@@ -791,7 +897,7 @@ export default function CheckoutForm({ items }: CheckoutFormProps) {
 
         .currency-label {
           font-size: 14px;
-          color: #6b7280;
+          color: #b9b9b9;
           font-weight: normal;
           margin-right: 4px;
         }
@@ -806,7 +912,7 @@ export default function CheckoutForm({ items }: CheckoutFormProps) {
         }
 
         .footer-links a {
-          color: #2563eb;
+          color: #000000;
           font-size: 12px;
           text-decoration: none;
         }

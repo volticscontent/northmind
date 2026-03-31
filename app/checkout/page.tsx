@@ -5,6 +5,7 @@ import { loadStripe, StripeElementsOptions } from "@stripe/stripe-js";
 import { Elements } from "@stripe/react-stripe-js";
 import CheckoutForm, { OrderItem } from "@/components/CheckoutForm";
 import { useCart } from "@/lib/CartContext";
+import { API_URL } from "@/lib/api";
 
 // Chave pública do Stripe
 const stripePromise = loadStripe(
@@ -41,7 +42,7 @@ export default function CheckoutPage() {
     // Cria o PaymentIntent via API route
     const createPaymentIntent = async () => {
       try {
-        const response = await fetch("/api/create-payment-intent", {
+        const response = await fetch(`${API_URL}/api/payment/create-payment-intent`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
@@ -51,7 +52,7 @@ export default function CheckoutPage() {
         });
 
         const data = await response.json();
-        
+
         if (data.clientSecret) {
           setClientSecret(data.clientSecret);
         } else {
@@ -73,7 +74,7 @@ export default function CheckoutPage() {
     appearance: {
       theme: "stripe", // Tema base do stripe (que é limpo)
       variables: {
-        colorPrimary: "#2563eb", // Cor principal azul
+        colorPrimary: "#000000", // Cor principal azul
         colorBackground: "#ffffff",
         colorText: "#111827",
         colorDanger: "#dc2626",
@@ -83,19 +84,19 @@ export default function CheckoutPage() {
         // Variáveis customizadas para ficar idêntico ao estilo do checkout
       },
       rules: {
-         ".Input": {
-            padding: "12px 14px",
-            boxShadow: "none",
-            border: "1px solid #d1d5db",
-         },
-         ".Input:focus": {
-            border: "1px solid #2563eb",
-            boxShadow: "0 0 0 1px #2563eb",
-         },
-         ".Label": {
-            color: "#6b7280",
-            fontSize: "14px",
-         }
+        ".Input": {
+          padding: "12px 14px",
+          boxShadow: "none",
+          border: "1px solid #d1d5db",
+        },
+        ".Input:focus": {
+          border: "1px solid #2c2c2c",
+          boxShadow: "0 0 0 1px #363636",
+        },
+        ".Label": {
+          color: "#6b7280",
+          fontSize: "14px",
+        }
       }
     },
     locale: "pt-BR", // Define o idioma para os inputs do Stripe (como CC, CVC)
