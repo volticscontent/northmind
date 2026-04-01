@@ -445,7 +445,7 @@ class App {
     this.scroll = { ease: scrollEase, current: 0, target: 0, last: 0 };
     this.onCheckDebounce = debounce(this.onCheck.bind(this), 200);
     this.onItemClick = onItemClick;
-    
+
     this.createRenderer();
     this.createCamera();
     this.createScene();
@@ -549,7 +549,7 @@ class App {
     this.isDown = true;
     this.startTime = Date.now();
     this.scroll.position = this.scroll.current;
-    
+
     if ('touches' in e) {
       this.startX = e.touches[0].clientX;
       this.startY = e.touches[0].clientY;
@@ -558,7 +558,7 @@ class App {
       this.startY = (e as MouseEvent).clientY;
     }
     this.start = this.startX;
-    
+
     this.updateMouse(e);
   }
 
@@ -571,7 +571,7 @@ class App {
 
   onTouchUp(e: MouseEvent | TouchEvent) {
     const isWithinTime = Date.now() - this.startTime < 300;
-    
+
     let endX: number, endY: number;
     if ('touches' in e) {
       const touch = e.changedTouches[0] || (e as TouchEvent).touches[0];
@@ -585,22 +585,24 @@ class App {
     const dist = Math.sqrt(
       Math.pow(endX - this.startX, 2) + Math.pow(endY - this.startY, 2)
     );
-    
-    const isClick = isWithinTime && dist < 10;
-    
+
+    // Increased threshold for better mobile tolerance
+    const isClick = isWithinTime && dist < 25;
+
     if (this.isDown && isClick && this.onItemClick) {
       this.updateMouse(e);
       this.raycast.castMouse(this.camera, this.mouse);
-      
+
       const intersects = this.raycast.intersectBounds(this.medias.map(m => m.plane));
       if (intersects.length > 0) {
+        // Sort by Z or just take first as they are bounds
         const index = this.medias.findIndex(m => m.plane === intersects[0]);
         if (index !== -1) {
           this.onItemClick(this.mediasImages[index]);
         }
       }
     }
-    
+
     this.isDown = false;
     this.onCheck();
   }
@@ -613,13 +615,18 @@ class App {
       x = touch.clientX;
       y = touch.clientY;
     } else {
-      x = e.clientX;
-      y = e.clientY;
+      x = (e as MouseEvent).clientX;
+      y = (e as MouseEvent).clientY;
     }
-    
+
+    // CRITICAL FIX: Account for canvas position in viewport
+    const rect = this.renderer.gl.canvas.getBoundingClientRect();
+    const relX = x - rect.left;
+    const relY = y - rect.top;
+
     this.mouse.set(
-      (x / this.renderer.width) * 2 - 1,
-      -(y / this.renderer.height) * 2 + 1
+      (relX / rect.width) * 2 - 1,
+      -(relY / rect.height) * 2 + 1
     );
   }
 
@@ -676,10 +683,15 @@ class App {
     window.addEventListener('resize', this.boundOnResize);
     window.addEventListener('mousewheel', this.boundOnWheel);
     window.addEventListener('wheel', this.boundOnWheel);
-    window.addEventListener('mousedown', this.boundOnTouchDown);
+
+    // Only capture 'down' events on the canvas itself to prevent global interference
+    const canvas = this.renderer.gl.canvas;
+    canvas.addEventListener('mousedown', this.boundOnTouchDown);
+    canvas.addEventListener('touchstart', this.boundOnTouchDown);
+
+    // Move and Up should stay on window to ensure we catch the end of a drag outside the canvas
     window.addEventListener('mousemove', this.boundOnTouchMove);
     window.addEventListener('mouseup', this.boundOnTouchUp);
-    window.addEventListener('touchstart', this.boundOnTouchDown);
     window.addEventListener('touchmove', this.boundOnTouchMove);
     window.addEventListener('touchend', this.boundOnTouchUp);
   }
@@ -689,10 +701,12 @@ class App {
     window.removeEventListener('resize', this.boundOnResize);
     window.removeEventListener('mousewheel', this.boundOnWheel);
     window.removeEventListener('wheel', this.boundOnWheel);
-    window.removeEventListener('mousedown', this.boundOnTouchDown);
+    const canvas = this.renderer.gl.canvas;
+    canvas.removeEventListener('mousedown', this.boundOnTouchDown);
+    canvas.removeEventListener('touchstart', this.boundOnTouchDown);
+
     window.removeEventListener('mousemove', this.boundOnTouchMove);
     window.removeEventListener('mouseup', this.boundOnTouchUp);
-    window.removeEventListener('touchstart', this.boundOnTouchDown);
     window.removeEventListener('touchmove', this.boundOnTouchMove);
     window.removeEventListener('touchend', this.boundOnTouchUp);
     if (this.renderer && this.renderer.gl && this.renderer.gl.canvas.parentNode) {
@@ -716,8 +730,8 @@ export default function CircularGallery({
   items,
   bend = 3,
   textColor = '#ffffff',
-  borderRadius = 0.05,
-  font = 'bold 30px Figtree',
+  borderRadius = 0.01,
+  font = 'bold 300px Montserrat',
   scrollSpeed = 2,
   scrollEase = 0.05,
   onItemClick

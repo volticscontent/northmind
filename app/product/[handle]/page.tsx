@@ -30,7 +30,13 @@ export async function generateStaticParams() {
   }));
 }
 
-export default async function ProductPage({ params }: { params: { handle: string } }) {
+export default async function ProductPage({ 
+  params,
+  searchParams 
+}: { 
+  params: { handle: string };
+  searchParams?: { [key: string]: string | string[] | undefined };
+}) {
   const product = await getProductByHandle(params.handle);
   const products = await getProducts();
   const allProducts = products.filter(p => p.handle !== params.handle);
@@ -42,7 +48,11 @@ export default async function ProductPage({ params }: { params: { handle: string
   return (
     <main className="min-h-screen bg-black">
       <Header />
-      <ProductDetail product={product} allProducts={allProducts} />
+      <ProductDetail 
+        product={product} 
+        allProducts={allProducts} 
+        searchParams={searchParams} 
+      />
       <Footer />
     </main>
   );

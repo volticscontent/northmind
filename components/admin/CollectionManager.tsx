@@ -1,8 +1,8 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Plus, Edit2, Trash2, X, Folder, Image as ImageIcon, ExternalLink } from "lucide-react";
-import { getCollections, deleteCollection, getProducts } from "@/lib/actions";
+import { Plus, Edit2, Trash2, X, Folder, Image as ImageIcon, ExternalLink, Eye, EyeOff, Loader2 } from "lucide-react";
+import { getCollections, deleteCollection, getProducts, setCollectionStatus } from "@/lib/actions";
 import { CollectionForm } from "./CollectionForm";
 
 export function CollectionManager() {
@@ -11,6 +11,7 @@ export function CollectionManager() {
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingCollection, setEditingCollection] = useState<any | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [isUpdatingStatus, setIsUpdatingStatus] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -54,6 +55,22 @@ export function CollectionManager() {
     } catch (err: any) {
       console.error("Error deleting collection:", err);
       alert(err.message || "Error deleting collection.");
+    }
+  };
+
+  const handleToggleStatus = async (collectionName: string, currentlyPublished: boolean) => {
+    const action = currentlyPublished ? "DRAFT" : "LIVE";
+    if (!confirm(`Set all products in "${collectionName}" to ${action}?`)) return;
+
+    setIsUpdatingStatus(collectionName);
+    try {
+      await setCollectionStatus(collectionName, !currentlyPublished);
+      await loadData();
+    } catch (err: any) {
+      console.error("Error updating collection status:", err);
+      alert(err.message || "Error updating collection status.");
+    } finally {
+      setIsUpdatingStatus(null);
     }
   };
 
@@ -133,14 +150,53 @@ export function CollectionManager() {
                       </h3>
                       <div className="flex items-center gap-3">
                         <p className="text-[9px] font-mono text-white/30 truncate">/{collection.handle}</p>
-                        <div className="flex items-center gap-1.5 px-3 py-1 bg-emerald-500/10 border border-emerald-500/20 rounded-full">
-                          <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                          <span className="text-[9px] font-black text-emerald-500 uppercase tracking-widest mt-px">Live Storefront</span>
-                        </div>
+                        {(() => {
+                            const productsInCollection = allProducts.filter(p => p.collection === collection.name);
+                            const allPublished = productsInCollection.length > 0 && productsInCollection.every(p => p.publicado);
+                            const somePublished = productsInCollection.some(p => p.publicado);
+                            
+                            if (allPublished) return (
+                                <div className="flex items-center gap-1.5 px-3 py-1 bg-emerald-500/10 border border-emerald-500/20 rounded-full">
+                                    <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                                    <span className="text-[9px] font-black text-emerald-500 uppercase tracking-widest mt-px">Live Storefront</span>
+                                </div>
+                            );
+                            if (somePublished) return (
+                                <div className="flex items-center gap-1.5 px-3 py-1 bg-amber-500/10 border border-amber-500/20 rounded-full">
+                                    <div className="w-1.5 h-1.5 rounded-full bg-amber-500" />
+                                    <span className="text-[9px] font-black text-amber-500 uppercase tracking-widest mt-px">Partial Live</span>
+                                </div>
+                            );
+                            return (
+                                <div className="flex items-center gap-1.5 px-3 py-1 bg-white/5 border border-white/10 rounded-full">
+                                    <div className="w-1.5 h-1.5 rounded-full bg-white/20" />
+                                    <span className="text-[9px] font-black text-white/40 uppercase tracking-widest mt-px">Draft Offline</span>
+                                </div>
+                            );
+                        })()}
                       </div>
                     </div>
                     
                     <div className="flex items-center gap-2">
+                        <button 
+                            onClick={() => {
+                                const productsInCollection = allProducts.filter(p => p.collection === collection.name);
+                                const isPublished = productsInCollection.some(p => p.publicado);
+                                handleToggleStatus(collection.name, isPublished);
+                            }}
+                            disabled={isUpdatingStatus === collection.name}
+                            className={`p-2.5 rounded-xl transition-all ${
+                                isUpdatingStatus === collection.name ? "bg-white/5 opacity-50 cursor-not-allowed" : 
+                                allProducts.some(p => p.collection === collection.name && p.publicado)
+                                ? "bg-amber-500/10 hover:bg-amber-500 text-amber-500 hover:text-white" 
+                                : "bg-emerald-500/10 hover:bg-emerald-500 text-emerald-500 hover:text-white"
+                            }`} 
+                            title={allProducts.some(p => p.collection === collection.name && p.publicado) ? "Set Collection to Draft" : "Set Collection to Live"}
+                        >
+                            {isUpdatingStatus === collection.name ? <Loader2 size={14} className="animate-spin" /> : 
+                             allProducts.some(p => p.collection === collection.name && p.publicado) ? <EyeOff size={14} /> : <Eye size={14} />
+                            }
+                        </button>
                         <a 
                             href={`/collections/${collection.handle}`} target="_blank" rel="noopener noreferrer" 
                             className="p-2.5 bg-emerald-500/10 rounded-xl hover:bg-emerald-500 text-emerald-500 hover:text-white transition-all" title="View Frontend Category"

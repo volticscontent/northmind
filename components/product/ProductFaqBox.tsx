@@ -66,17 +66,16 @@ export function ProductFaqBox() {
   const [activeFaq, setActiveFaq] = useState<number | null>(null);
 
   return (
-    <div className="space-y-4 pt-10 border-t border-white/5">
-      <h3 className="text-xs uppercase font-bold tracking-luxury text-white/30 mb-6">
+    <div className="space-y-4 pt-10">
+      <h3 className="text-xs uppercase font-bold tracking-luxury text-white mb-6">
         Customer Queries
       </h3>
       <div className="grid grid-cols-1 gap-3">
         {faqData.map((faq) => (
           <div
             key={faq.id}
-            className={`premium-border overflow-hidden transition-all duration-500 ${
-              activeFaq === faq.id ? "bg-white/5 border-white/20" : "bg-card/20 border-white/5"
-            }`}
+            className={`premium-border overflow-hidden transition-all duration-500 ${activeFaq === faq.id ? "bg-white/5 border-white/20" : "bg-card/20 border-white/5"
+              }`}
           >
             <button
               onClick={() => setActiveFaq(activeFaq === faq.id ? null : faq.id)}

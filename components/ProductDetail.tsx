@@ -1,56 +1,48 @@
 import { Product } from "@/lib/data-loader";
 import Link from "next/link";
 import Image from "next/image";
-import { Star, ShieldCheck, CheckCircle2, Package, Truck } from "lucide-react";
-import { ProductHighlightsCard } from "./ProductHighlightsCard";
+import { Star, ShieldCheck, CheckCircle2, Package, Truck, Info } from "lucide-react";
 import { ProductCard } from "./ProductCard";
 import { ProductFaqBox } from "./product/ProductFaqBox";
 import { ProductInteractions } from "./product/ProductInteractions";
 import { ProductReviews } from "./product/ProductReviews";
-
+import { ProductGallery } from "./product/ProductGallery";
+import { ProductAccordion } from "./product/ProductAccordion";
+import { LifestyleStories } from "./product/LifestyleStories";
 interface ProductDetailProps {
   product: Product;
   allProducts: Product[];
+  searchParams?: { [key: string]: string | string[] | undefined };
 }
 
-export function ProductDetail({ product, allProducts }: ProductDetailProps) {
+export function ProductDetail({ product, allProducts, searchParams }: ProductDetailProps) {
   const safePrice = Number(product?.price) || 0;
   const safeOriginalPrice = Number(product?.originalPrice) || 0;
   const discount = safeOriginalPrice > safePrice
     ? Math.round(((safeOriginalPrice - safePrice) / safeOriginalPrice) * 100)
     : 0;
 
+  const selectedColor = searchParams?.color;
+
+  // Elite Filtering: Filter images by variant or show all if none selected
+  const colorData = product.opcoesCor?.find(c => c.name === selectedColor);
+  const imagesToShow = colorData?.fotos && colorData.fotos.length > 0
+    ? colorData.fotos
+    : product.images || [];
+
   return (
     <>
-      <div className="pt-24 md:pt-32 pb-24 px-4 md:px-8 max-w-7xl mx-auto animate-fade-in">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-12 md:gap-20 items-start">
-          {/* Product Images - STICKY on Desktop (Server Rendered) */}
+      <div className="pt-16 md:pt-32 pb-24 max-w-[100%] md:max-w-[70%] mx-auto animate-fade-in">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-5 md:gap-20 items-start">
+          {/* Product Images - STICKY on Desktop */}
           <div className="md:sticky md:top-28 self-start">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-              {[0, 1, 2, 3].map((index) => {
-                const imgSrc = (product.images && product.images[index]) ? product.images[index] : (product.images && product.images[0]) ? product.images[0] : "/assets/community/1.png";
-                return (
-                  <div
-                    key={index}
-                    className="relative w-full aspect-[4/5] premium-border bg-card/30 flex items-center justify-center overflow-hidden group"
-                  >
-                    <Image
-                      src={imgSrc}
-                      alt={`${product.title} ${index + 1}`}
-                      fill
-                      priority={index === 0}
-                      sizes="(max-width: 768px) 100vw, 50vw"
-                      className="object-cover transition-transform duration-1000 group-hover:scale-105"
-                    />
-                    {index === 0 && discount > 0 && (
-                      <div className="absolute top-4 left-4 z-10 bg-accent text-black text-[10px] font-black px-3 py-1 uppercase tracking-luxury">
-                        -{discount}% EXCLUSIVE
-                      </div>
-                    )}
-                  </div>
-                );
-              })}
-            </div>
+            <ProductGallery
+              images={imagesToShow}
+              title={product.title}
+              discount={discount}
+              opcoesCor={product.opcoesCor}
+              isFragrance={product.collection?.toLowerCase().includes('fragrance') || product.collection?.toLowerCase().includes('offer')}
+            />
           </div>
 
           {/* Right Column - Content (Server Rendered) */}
@@ -83,7 +75,7 @@ export function ProductDetail({ product, allProducts }: ProductDetailProps) {
                 £{safePrice.toFixed(2)}
               </span>
               {discount > 0 && (
-                <span className="text-xl text-white/30 line-through font-medium">
+                <span className="text-xl text-white/60 line-through font-medium">
                   £{safeOriginalPrice.toFixed(2)}
                 </span>
               )}
@@ -94,125 +86,144 @@ export function ProductDetail({ product, allProducts }: ProductDetailProps) {
             </p>
 
             {/* INTERACTIVE ISLAND: Variants, Bundles, Add to Cart */}
-            <ProductInteractions product={product} />
+            <ProductInteractions product={product} allProducts={allProducts} />
+
 
             {/* Trust & Shipping Info - Vercel Compact Version */}
-            <div className="mt-8 space-y-4 border-b border-white/5 pb-12">
+            <div className="mt-8 space-y-4">
               {/* Shipping Badge Row */}
-              <div className="flex items-center justify-between px-3 py-2.5 bg-white/5 border border-white/5 rounded-lg backdrop-blur-sm">
+              <div className="flex items-center justify-between px-3 py-2.5 bg-white/5 rounded-lg backdrop-blur-sm">
                 <div className="flex items-center gap-2.5">
-                  <div className="w-2.5 h-2.5 rounded-full bg-[#C5A358] blur-[2px] animate-pulse " />
                   <p className="text-[9px] font-bold uppercase tracking-widest text-white/70">
-                    Ships by <span className="text-white">Next Business Day</span>
+                    Ships by <span className="text-white">Next In 5 Days</span>
                   </p>
                 </div>
                 <div className="flex items-center gap-2">
-                  <Truck size={12} className="text-[#C5A358]" />
-                  <p className="text-[9px] font-black uppercase tracking-widest text-[#C5A358]">
+                  <Truck size={12} className="text-green-500" />
+                  <p className="text-[9px] font-black uppercase tracking-widest text-green-500">
                     Free Shipping
                   </p>
                 </div>
               </div>
 
               {/* Trust Card */}
-              <div className="bg-card/30 border border-white/5 rounded-xl p-5 space-y-4 transition-all duration-500 hover:border-[#C5A358]/30 group">
+              <div className="bg-glow-card border border-white/90 rounded-xl p-5 space-y-4 transition-all duration-500 hover:border-[#C5A358]/30 group">
                 <div className="flex gap-4">
-                  <div className="shrink-0 mt-1">
-                    <CheckCircle2 size={18} className="text-[#C5A358] fill-[#C5A358]/20" />
-                  </div>
+
                   <div className="space-y-1.5">
                     <h4 className="text-xs font-black uppercase tracking-luxury text-white">Authorized Premium Retailer</h4>
-                    <p className="text-[10px] font-medium leading-relaxed text-white/30">Original inventory, guaranteed provenance, and responsive customer support.</p>
+                    <p className="text-[10px] font-medium leading-relaxed text-white/80">Original inventory, guaranteed provenance, and responsive customer support.</p>
                   </div>
                 </div>
-                <div className="flex items-center gap-3 bg-[#C5A358]/5 border border-[#C5A358]/10 rounded-lg p-3 transition-colors group-hover:bg-[#C5A358]/10">
-                  <Package size={16} className="text-[#C5A358]" />
-                  <p className="text-[9px] font-black uppercase tracking-widest text-[#C5A358] leading-none">Secure Purchase ┬À Easy Returns</p>
+                <div className="flex items-center gap-3 bg-white/5 border border-[#C5A358]/10 rounded-lg p-3 transition-colors group-hover:bg-[#C5A358]/10">
+                  <Package size={16} className="text-white" />
+                  <p className="text-[9px] font-black uppercase tracking-widest text-white leading-none">Secure Purchase & Easy Returns</p>
                 </div>
               </div>
             </div>
 
-            <div className="space-y-12">
-              {/* Product Features (Static) */}
-              <div className="pt-12 space-y-8">
-                <h3 className="text-xs uppercase font-bold tracking-luxury text-white/30">
-                  TECHNICAL CRAFTSMANSHIP
-                </h3>
-                <div className="grid grid-cols-1 gap-6">
-                  {product.highlights && product.highlights.length > 0 ? (
-                    product.highlights.map((h, i) => (
-                      <div key={i} className="flex gap-4">
-                        <CheckCircle2 size={16} className="text-accent shrink-0 mt-0.5" />
-                        <div>
-                          <h4 className="text-[11px] font-black uppercase tracking-widest text-white mb-2">{h.title}</h4>
-                          <p className="text-[11px] leading-relaxed text-white/40 font-medium">{h.text}</p>
+            <div className="">
+              <ProductAccordion
+                items={[
+                  // SECTION 1: Technical Details (from Shopify/Admin specs)
+                  {
+                    id: "details",
+                    title: (product.tipo === "PERFUME" || product.collection?.toLowerCase().includes("fragrance")) ? "Fragrance Profile" : "Product Details",
+                    icon: <Info size={16} />,
+                    content: (
+                      <ul className="space-y-4">
+                        {(product.especificacoes || []).length > 0 ? (
+                          product.especificacoes?.map((spec, i) => (
+                            <li key={i} className="flex gap-3">
+                              <div className="w-1 h-1 rounded-full bg-accent/40 mt-1.5 shrink-0" />
+                              <span>{spec}</span>
+                            </li>
+                          ))
+                        ) : (
+                          <li className="italic text-white/30 tracking-tight">No additional technical specs listed for this item.</li>
+                        )}
+                      </ul>
+                    )
+                  },
+                  // SECTION 2: Fabrication & Care
+                  {
+                    id: "fabrication",
+                    title: (product.tipo === "PERFUME" || product.collection?.toLowerCase().includes("fragrance")) ? "Fragrance Notes & Care" : "Fabrication & Care",
+                    icon: <ShieldCheck size={16} />,
+                    content: (
+                      <div className="space-y-6">
+                        {product.materiais && product.materiais.length > 0 && (
+                          <div className="flex flex-wrap gap-x-8 gap-y-4">
+                            {product.materiais.map((m, i) => (
+                              <div key={i} className="space-y-1">
+                                <p className="text-[10px] font-black uppercase tracking-widest text-[#C5A358]">{m.percentage}</p>
+                                <p className="text-[11px] font-medium text-white/60">{m.item}</p>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                        {product.instrucoesCuidado && (
+                          <p className="text-[11px] font-medium leading-relaxed italic border-l border-accent/20 pl-4">
+                            "{product.instrucoesCuidado}"
+                          </p>
+                        )}
+                      </div>
+                    )
+                  },
+                  // SECTION 3: Custom highlights (Storytelling)
+                  ...(product.highlights || []).map((h, i) => ({
+                    id: `highlight-${i}`,
+                    title: h.title,
+                    icon: h.icon === 'Package' ? <Package size={16} /> : <CheckCircle2 size={16} />,
+                    content: <p className="leading-relaxed">{h.text}</p>
+                  })),
+                  // SECTION 4: Customer Reviews
+                  {
+                    id: "reviews",
+                    title: "Customer Reviews",
+                    icon: <Star size={16} />,
+                    content: (
+                      <div className="py-2">
+                        <ProductReviews produtoId={product.id} />
+                      </div>
+                    )
+                  },
+                  // SECTION 5: Shipping & Returns (Static)
+                  {
+                    id: "shipping",
+                    title: "Shipping & Returns",
+                    icon: <Truck size={16} />,
+                    content: (
+                      <div className="space-y-4">
+                        <div className="flex gap-3">
+                          <span className="w-1.5 h-1.5 rounded-full bg-white mt-2 shrink-0" />
+                          <p><strong>Free Standard Shipping</strong> on all UK orders. Delivered within 10-20 business days.</p>
+                        </div>
+                        <div className="flex gap-3">
+                          <span className="w-1.5 h-1.5 rounded-full bg-white mt-2 shrink-0" />
+                          <p>Returns accepted within 14 days for all unworn assets in original condition.</p>
                         </div>
                       </div>
-                    ))
-                  ) : (
-                    <>
-                      <div className="flex gap-4">
-                        <CheckCircle2 size={16} className="text-accent shrink-0 mt-0.5" />
-                        <div>
-                          <h4 className="text-[11px] font-black uppercase tracking-widest text-white mb-2">Weather Resistant Shell</h4>
-                          <p className="text-[11px] leading-relaxed text-white/40 font-medium">Japanese-grade high-density polyester with durable water repellent treatment.</p>
-                        </div>
-                      </div>
-                      <div className="flex gap-4">
-                        <Package size={16} className="text-accent shrink-0 mt-0.5" />
-                        <div>
-                          <h4 className="text-[11px] font-black uppercase tracking-widest text-white mb-2">Sustainable Insulation</h4>
-                          <p className="text-[11px] leading-relaxed text-white/40 font-medium">Recycled synthetic down that provides superior warmth even when damp.</p>
-                        </div>
-                      </div>
-                    </>
-                  )}
-                </div>
-              </div>
-
-              {/* INTERACTIVE ISLAND: FAQ */}
-              <ProductFaqBox />
-
-              {/* INTERACTIVE ISLAND: Reviews */}
-              <ProductReviews produtoId={product.id} />
+                    )
+                  }
+                ]}
+              />
             </div>
+
+            {/* ELITE LIFESTYLE STORIES: Compact vertical unboxing (Layout Original) */}
+            <LifestyleStories videos={product.videos} />
+
+            {/* INTERACTIVE ISLAND: FAQ */}
+            <ProductFaqBox />
+
           </div>
         </div>
       </div>
 
-      <div className="pt-32 space-y-48" style={{ overflowX: 'clip' }}>
-        {/* NORTH MIND REELS - New Section for 3 vertical videos */}
-        {product.videos && product.videos.length > 0 && (
-          <section className="max-w-7xl mx-auto px-4 md:px-8 space-y-16">
-            <div className="text-center space-y-4">
-              <h2 className="text-4xl md:text-5xl font-black uppercase tracking-tighter text-white">
-                Live The Experience
-              </h2>
-              <p className="text-sm font-medium text-white/40 uppercase tracking-widest max-w-xl mx-auto">
-                Product movement and artisan details in motion
-              </p>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              {product.videos.slice(0, 3).map((videoSrc, idx) => (
-                <div key={idx} className="relative aspect-[9/16] bg-card/30 rounded-3xl overflow-hidden border border-white/5 shadow-2xl">
-                  <video
-                    src={videoSrc}
-                    autoPlay
-                    muted
-                    loop
-                    playsInline
-                    className="absolute inset-0 w-full h-full object-cover"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent pointer-events-none" />
-                </div>
-              ))}
-            </div>
-          </section>
-        )}
+      <div className="pt-32 space-y-12" style={{ overflowX: 'clip' }}>
 
         {/* North Mind Community - Static structure + marquee (Server Rendered) */}
-        <section className="space-y-16 overflow-hidden">
+        <section className="overflow-hidden px-4">
           <div className="text-center space-y-4">
             <h2 className="text-4xl md:text-5xl font-black uppercase tracking-tighter text-white">
               North Mind Community

@@ -213,17 +213,15 @@ export function MediaUpload({
     formData.append("folder", "products");
 
     try {
-      // Obter token do local storage ou session se necessário
-      // Aqui assumimos que o Admin já está logado
-      const token = (window as any).nextAuthToken || ""; // Fallback ou lógica de token
+      const auth = await import("next-auth/react");
+      const session = await auth.getSession();
+      const token = (session?.user as any)?.token || "";
 
       const res = await fetch(`${API_URL}/api/upload`, {
         method: "POST",
         body: formData,
-        // O token deve ser passado se a rota for protegida por isAdmin
-        // Vamos checar se o NextAuth expõe o token
         headers: {
-            "Authorization": `Bearer ${JSON.parse(localStorage.getItem("nextauth.token") || "\"\"")}`
+            "Authorization": `Bearer ${token}`
         }
       });
 
@@ -243,7 +241,7 @@ export function MediaUpload({
       setUploading(false);
       if (fileInputRef.current) fileInputRef.current.value = "";
     }
-  }, [items, multiple, onChange, maxFiles]);
+  }, [items, multiple, onChange, maxFiles, urls]);
 
   const handleRemove = (url: string) => {
     if (multiple) {

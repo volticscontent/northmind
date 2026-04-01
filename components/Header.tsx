@@ -13,6 +13,7 @@ import { useRouter } from "next/navigation";
 const mobileNavLinks = [
   { label: "Jackets", href: "/collections/jackets" },
   { label: "Silent Warmth", href: "/collections/silent-warmth" },
+  { label: "3x1 Fragrances", href: "/collections/3x1-fragrances" },
   { label: "About", href: "/about" },
   { label: "FAQ", href: "/faq" },
   { label: "Shipping", href: "/shipping" },
@@ -51,12 +52,12 @@ export function Header() {
 
   const icons = [
     { id: "search", icon: Search, label: "Search", action: () => setIsSearchOpen(true) },
-    { 
-      id: "auth", 
-      icon: User, 
-      label: status === "authenticated" ? (session?.user?.name?.split(" ")[0] || "Profile") : "Login", 
-      action: () => router.push(status === "authenticated" ? "/customer" : "/login"), 
-      desktopOnly: true 
+    {
+      id: "auth",
+      icon: User,
+      label: status === "authenticated" ? (session?.user?.name?.split(" ")[0] || "Profile") : "Login",
+      action: () => router.push(status === "authenticated" ? "/customer" : "/login"),
+      desktopOnly: true
     },
     {
       id: "cart",
@@ -77,7 +78,7 @@ export function Header() {
       >
         <div className="max-w-7xl mx-auto px-4 h-full flex items-center justify-between">
           {/* Mobile Menu Button - 44px minimum touch target */}
-          <button 
+          <button
             className="md:hidden flex items-center justify-center min-h-[44px] min-w-[44px] text-white/90 hover:text-accent active:text-accent/70 transition-colors"
             onClick={() => setIsMobileMenuOpen(true)}
             aria-label="Open navigation menu"
@@ -92,6 +93,9 @@ export function Header() {
             </Link>
             <Link href="/collections/silent-warmth" className="text-[10px] uppercase font-bold tracking-luxury text-white/80 hover:text-accent hover:underline transition-all duration-300">
               Silent Warmth
+            </Link>
+            <Link href="/collections/3x1-fragrances" className="text-[10px] uppercase font-bold tracking-luxury text-white/80 hover:text-accent hover:underline transition-all duration-300">
+              3x1 Fragrances
             </Link>
           </nav>
 
@@ -118,7 +122,7 @@ export function Header() {
                   onMouseLeave={() => setHoveredIcon(null)}
                   onClick={item.action}
                   aria-label={item.label}
-                  className={`flex items-center gap-2 min-h-[44px] min-w-[44px] justify-center rounded-full transition-all duration-300 ${item.desktopOnly ? "hidden md:flex" : "flex"
+                  className={`flex items-center gap-2 min-h-[44px] min-w-[44px] justify-center rounded-full px-4 transition-all duration-300 ${item.desktopOnly ? "hidden md:flex" : "flex"
                     } ${hoveredIcon === item.id ? "bg-white/5 text-white" : "text-white/80"}`}
                 >
                   <div className="relative">

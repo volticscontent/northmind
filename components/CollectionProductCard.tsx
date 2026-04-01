@@ -22,8 +22,8 @@ export function CollectionProductCard({ product }: CollectionProductCardProps) {
           className="w-full h-full object-contain mix-blend-multiply transition-transform duration-700 group-hover:scale-105"
         />
         {discount > 0 && (
-          <div className="absolute bottom-4 left-4 z-10 bg-[#111827] text-white text-[10px] font-bold px-3 py-1.5 rounded-full uppercase tracking-widest shadow-sm">
-            Sale
+          <div className="absolute bottom-4 left-4 z-10 bg-[#1b1b1b] text-white text-[10px] font-bold px-1 py-0.2 uppercase tracking-widest shadow-sm">
+            {discount}% OFF
           </div>
         )}
       </div>

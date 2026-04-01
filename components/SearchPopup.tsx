@@ -4,27 +4,32 @@ import { useState, useRef, useEffect } from "react";
 import { Search, X, ArrowRight } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
+import Image from "next/image";
+import { getProducts, getCollections, Product, Collection } from "@/lib/data-loader";
 
 interface SearchPopupProps {
   isOpen: boolean;
   onClose: () => void;
 }
 
-const suggestions = [
-  { label: "Jackets", href: "/collections/jackets" },
-  { label: "Silent Warmth", href: "/collections/silent-warmth" },
-  { label: "British Heritage", href: "/collections/jackets" },
-  { label: "Premium Leather", href: "/collections/jackets" },
-  { label: "Winter Classics", href: "/collections/silent-warmth" },
-];
-
 export function SearchPopup({ isOpen, onClose }: SearchPopupProps) {
   const [query, setQuery] = useState("");
+  const [products, setProducts] = useState<Product[]>([]);
+  const [collections, setCollections] = useState<Collection[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const cardRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
+    async function loadData() {
+      setIsLoading(true);
+      const [pData, cData] = await Promise.all([getProducts(), getCollections()]);
+      setProducts(pData);
+      setCollections(cData);
+      setIsLoading(false);
+    }
     if (isOpen) {
+      loadData();
       setTimeout(() => inputRef.current?.focus(), 300);
     } else {
       setQuery("");
@@ -50,8 +55,13 @@ export function SearchPopup({ isOpen, onClose }: SearchPopupProps) {
     };
   }, [isOpen, onClose]);
 
-  const filtered = suggestions.filter((s) =>
-    s.label.toLowerCase().includes(query.toLowerCase())
+  const filteredProducts = products.filter((p) =>
+    p.title.toLowerCase().includes(query.toLowerCase()) ||
+    p.collection.toLowerCase().includes(query.toLowerCase())
+  ).slice(0, 8);
+
+  const filteredCollections = collections.filter((c) =>
+    c.name.toLowerCase().includes(query.toLowerCase())
   );
 
   return (
@@ -76,14 +86,14 @@ export function SearchPopup({ isOpen, onClose }: SearchPopupProps) {
             transition={{ type: "spring", damping: 25, stiffness: 300 }}
             className="fixed inset-0 z-[70] flex items-start justify-center pt-20 pointer-events-none"
           >
-            <div className="w-[90vw] max-w-lg pointer-events-auto">
+            <div className="w-[90vw] max-w-xl pointer-events-auto">
               {/* Border Glow wrapper */}
               <div className="border-glow-card rounded-2xl p-[1px]">
-                <div className="bg-black rounded-2xl p-6 space-y-5">
+                <div className="bg-[#0a0a09] rounded-2xl p-6 space-y-6">
                   {/* Header */}
                   <div className="flex items-center justify-between">
                     <span className="text-[10px] uppercase tracking-[0.3em] text-white/40 font-bold">
-                      Pesquisar
+                      Intelligent Search
                     </span>
                     <button
                       onClick={onClose}
@@ -94,45 +104,94 @@ export function SearchPopup({ isOpen, onClose }: SearchPopupProps) {
                   </div>
 
                   {/* Input */}
-                  <div className="flex items-center gap-3 border border-white/10 rounded-xl px-4 py-3 focus-within:border-white/30 transition-colors">
+                  <div className="flex items-center gap-3 border border-white/10 rounded-xl px-4 py-4 focus-within:border-white/30 transition-all bg-white/5">
                     <Search size={18} className="text-white/30 flex-shrink-0" />
                     <input
                       ref={inputRef}
                       value={query}
                       onChange={(e) => setQuery(e.target.value)}
-                      placeholder="O que você procura?"
-                      className="bg-transparent w-full text-sm text-white placeholder:text-white/25 outline-none"
+                      placeholder="What are you looking for?"
+                      className="bg-transparent w-full text-base text-white placeholder:text-white/25 outline-none"
                     />
                   </div>
 
-                  {/* Suggestions */}
-                  <div className="space-y-1">
-                    <span className="text-[9px] uppercase tracking-[0.25em] text-white/30 font-bold">
-                      {query ? "Resultados" : "Destinos populares"}
-                    </span>
-                    <div className="space-y-0.5 mt-2">
-                      {filtered.length > 0 ? (
-                        filtered.map((s) => (
-                          <Link
-                            key={s.label}
-                            href={s.href}
-                            onClick={onClose}
-                            className="flex items-center justify-between px-3 py-2.5 rounded-lg hover:bg-white/5 group transition-all"
-                          >
-                            <span className="text-sm text-white/70 group-hover:text-white transition-colors">
-                              {s.label}
-                            </span>
-                            <ArrowRight
-                              size={14}
-                              className="text-white/0 group-hover:text-white/50 transition-all transform group-hover:translate-x-1"
-                            />
-                          </Link>
-                        ))
-                      ) : (
-                        <p className="text-xs text-white/30 px-3 py-4 text-center">
-                          Nenhum resultado encontrado
-                        </p>
-                      )}
+                  {/* Results Section */}
+                  <div className="max-h-[60vh] overflow-y-auto pr-2 space-y-8 scrollbar-thin scrollbar-thumb-white/10">
+
+                    {/* Collections */}
+                    {(query === "" || filteredCollections.length > 0) && (
+                      <div className="space-y-3">
+                        <span className="text-[9px] uppercase tracking-[0.25em] text-white/30 font-bold">
+                          Collections
+                        </span>
+                        <div className="flex flex-wrap gap-2">
+                          {filteredCollections.map((c) => (
+                            <Link
+                              key={c.handle}
+                              href={`/collections/${c.handle}`}
+                              onClick={onClose}
+                              className="px-4 py-2 rounded-full border border-white/10 bg-white/5 text-[10px] font-bold uppercase tracking-widest text-white/70 hover:text-white hover:border-white/30 transition-all"
+                            >
+                              {c.name}
+                            </Link>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Products */}
+                    <div className="space-y-4">
+                      <span className="text-[9px] uppercase tracking-[0.25em] text-white/30 font-bold">
+                        {query ? "Product Results" : "Featured Products"}
+                      </span>
+
+                      <div className="space-y-2">
+                        {isLoading ? (
+                          <div className="py-8 flex justify-center">
+                            <div className="w-5 h-5 border-2 border-white/20 border-t-white rounded-full animate-spin" />
+                          </div>
+                        ) : filteredProducts.length > 0 ? (
+                          filteredProducts.map((p) => (
+                            <Link
+                              key={p.id}
+                              href={`/product/${p.handle}`}
+                              onClick={onClose}
+                              className="flex items-center gap-4 p-2 rounded-xl hover:bg-white/5 group transition-all"
+                            >
+                              <div className="relative w-20 h-20 rounded-lg overflow-hidden flex-shrink-0 bg-white border border-white/10">
+                                <Image
+                                  src={p.images[0] || "/assets/community/1.png"}
+                                  alt={p.title}
+                                  fill
+                                  className="object-cover transition-transform duration-500 group-hover:scale-110"
+                                />
+                              </div>
+                              <div className="flex-grow min-w-0">
+                                <h4 className="text-sm font-bold text-white/90 group-hover:text-white truncate">
+                                  {p.title}
+                                </h4>
+                                <p className="text-[10px] uppercase tracking-luxury text-white/40 mt-1">
+                                  {p.collection}
+                                </p>
+                              </div>
+                              <div className="text-right">
+                                <span className="text-sm font-bold text-white">
+                                  £{p.price.toFixed(2)}
+                                </span>
+                                {p.originalPrice > p.price && (
+                                  <p className="text-[10px] text-white/30 line-through mt-0.5">
+                                    £{p.originalPrice.toFixed(2)}
+                                  </p>
+                                )}
+                              </div>
+                            </Link>
+                          ))
+                        ) : (
+                          <p className="text-xs text-white/30 py-8 text-center bg-white/5 rounded-xl border border-dashed border-white/10">
+                            No products found matching "{query}"
+                          </p>
+                        )}
+                      </div>
                     </div>
                   </div>
                 </div>

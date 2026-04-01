@@ -4,6 +4,10 @@ const nextConfig = {
     remotePatterns: [
       {
         protocol: 'https',
+        hostname: 'northmind.store',
+      },
+      {
+        protocol: 'https',
         hostname: 'cdn.shopify.com',
       },
       {

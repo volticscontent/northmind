@@ -115,10 +115,17 @@ model Produto {
   opcoesTamanho   String[] @default(["S", "M", "L", "XL", "XXL"])
   opcoesCor       Json?    // [{ name: "Black", hex: "#000000" }]
   highlights      Json?    // [{ icon: "Shield", title: "Warranty", text: "..." }]
+  variantes       Json?    // Elite Pricing (Size/ML)
+  materiais       Json?    // Elite Fabric Composition
+  especificacoes  String[] // Technical Bullets
+  guiaTamanho     Json?    // Sizing Chart Table
+  detalhesModelo  String?  // Model wear info
+  instrucoesCuidado String? // Care instructions
   videos          String[]
   totalAvaliacoes Int      @default(0)
   mediaAvaliacoes Float    @default(5.0)
   comentarios     Comentario[] // Relation to actual comments if present
+  tipo            String   @default("ROUPA") // ["ROUPA", "PERFUME"]
 
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
@@ -130,6 +137,8 @@ model Comentario {
   id        String   @id @default(cuid())
   rating    Int      @default(5)
   texto     String   @db.Text
+  fotos     String[]
+  videoUrl  String?
   createdAt DateTime @default(now())
 
   // Relations

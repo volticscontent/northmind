@@ -65,7 +65,7 @@ async function main() {
     { handle: "silent-warmth", name: "Silent Warmth", image: "/collections/silent-warmth.png", desc: "Premium heavyweight knitwear and winter essences. Noir Collection." },
     { handle: "fragrances", name: "Fragrances", image: "/collections/fragrances.png", desc: "Signature scents and modern chic perfumery. Noir Collection." },
     { handle: "t-shirts", name: "T-Shirts", image: "/collections/t-shirts.png", desc: "Minimalist luxury essentials in premium cotton. Noir Collection." },
-    { handle: "special-promo", name: "Special Promo", image: "/collections/special-promo.png", desc: "Exclusive access to seasonal drops and limited pieces." },
+    { handle: "special-promo", name: "3/1 fragrances", image: "/collections/special-promo.png", desc: "Exclusive access to seasonal drops and limited pieces." },
     { handle: "kits", name: "Kits", image: "/collections/kits.png", desc: "Curated gift sets for the complete luxury experience." }
   ];
 

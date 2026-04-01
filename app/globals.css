@@ -48,7 +48,9 @@ body.drawer-open {
 }
 
 /* Mobile touch optimization */
-button, a, [role="button"] {
+button,
+a,
+[role="button"] {
   -webkit-tap-highlight-color: transparent;
   touch-action: manipulation;
 }
@@ -124,7 +126,7 @@ button, a, [role="button"] {
   .dark {
     --background: oklch(0.145 0 0);
     --foreground: oklch(0.985 0 0);
-    --card: oklch(0.205 0 0);
+    --card: oklch(75.402% 0.00009 271.152);
     --card-foreground: oklch(0.985 0 0);
     --popover: oklch(0.205 0 0);
     --popover-foreground: oklch(0.985 0 0);
@@ -352,16 +354,20 @@ button, a, [role="button"] {
     transform: none;
     transition: none;
   }
+
   .glare-loop::before {
     animation: none;
   }
+
   .border-glow-card,
   .border-glow-card::before {
     animation: none;
   }
+
   .animate-marquee {
     animation: none;
   }
+
   .animate-scroll {
     animation: none;
   }
@@ -372,6 +378,7 @@ button, a, [role="button"] {
   .border-glow-card {
     animation: border-glow-spin 6s linear infinite;
   }
+
   .border-glow-card::before {
     animation: border-glow-spin 6s linear infinite;
     filter: blur(6px);
@@ -380,7 +387,10 @@ button, a, [role="button"] {
 
 /* iOS-specific input zoom prevention */
 @supports (-webkit-touch-callout: none) {
-  input, select, textarea {
+
+  input,
+  select,
+  textarea {
     font-size: 16px !important;
   }
 }

@@ -11,11 +11,18 @@ export interface Product {
   images: string[];
   publicado: boolean;
   opcoesTamanho: string[];
-  opcoesCor?: { name: string; hex: string }[];
+  opcoesCor?: { name: string; hex: string; image?: string; fotos?: string[] }[];
   highlights?: { icon: string; title: string; text: string }[];
   mediaAvaliacoes?: number;
   totalAvaliacoes?: number;
   videos: string[];
+  materiais?: { item: string; percentage: string }[];
+  guiaTamanho?: any;
+  detalhesModelo?: string;
+   instrucoesCuidado?: string;
+  especificacoes?: string[];
+  variantes?: any[];
+  tipo: "ROUPA" | "PERFUME";
 }
 
 export interface Collection {

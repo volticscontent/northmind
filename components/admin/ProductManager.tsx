@@ -13,11 +13,12 @@ import { CollectionManager } from "./CollectionManager";
 import { upsertProduct, deleteProduct } from "@/lib/actions";
 import { useRouter } from "next/navigation";
 import { MediaUpload } from "./MediaUpload";
+import { ReviewManager } from "./ReviewManager";
 
 export function ProductManager({ initialProducts }: { initialProducts: any[] }) {
   const router = useRouter();
   const [products, setProducts] = useState<any[]>(initialProducts);
-  const [currentView, setCurrentView] = useState<"products" | "collections" | "editor">("products");
+  const [currentView, setCurrentView] = useState<"products" | "collections" | "reviews" | "editor">("products");
   const [editingProduct, setEditingProduct] = useState<any | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
@@ -42,6 +43,23 @@ export function ProductManager({ initialProducts }: { initialProducts: any[] }) 
     opcoesTamanho: ["S", "M", "L", "XL", "XXL"],
     opcoesCor: [] as any[],
     highlights: [] as any[],
+    materiais: [] as { item: string; percentage: string }[],
+    guiaTamanho: {
+      type: "table",
+      headers: ["Size", "Chest (cm)", "Length (cm)", "Sleeve (cm)"],
+      rows: [
+        ["S", "54", "70", "64"],
+        ["M", "56", "72", "66"],
+        ["L", "58", "74", "68"],
+        ["XL", "60", "76", "70"]
+      ]
+    },
+    detalhesModelo: "",
+    instrucoesCuidado: "",
+    especificacoes: [] as string[],
+    variantes: [] as { label: string; price: string; originalPrice?: string; sku?: string }[],
+    handle: "",
+    tipo: "ROUPA",
   });
 
   const uniqueCollections = useMemo(() =>
@@ -94,6 +112,27 @@ export function ProductManager({ initialProducts }: { initialProducts: any[] }) 
         opcoesTamanho: product.opcoesTamanho || ["S", "M", "L", "XL", "XXL"],
         opcoesCor: product.opcoesCor || [],
         highlights: product.highlights || [],
+        materiais: product.materiais || [],
+        guiaTamanho: product.guiaTamanho || {
+          type: "table",
+          headers: ["Size", "Chest (cm)", "Length (cm)", "Sleeve (cm)"],
+          rows: [
+            ["S", "54", "70", "64"],
+            ["M", "56", "72", "66"],
+            ["L", "58", "74", "68"],
+            ["XL", "60", "76", "70"]
+          ]
+        },
+        detalhesModelo: product.detalhesModelo || "",
+        instrucoesCuidado: product.instrucoesCuidado || "",
+        especificacoes: product.especificacoes || [],
+        variantes: (product.variantes || []).map((v: any) => ({
+          ...v,
+          price: v.price?.toString() || "",
+          originalPrice: v.originalPrice?.toString() || ""
+        })),
+        handle: product.handle || "",
+        tipo: product.tipo || "ROUPA"
       });
     } else {
       setEditingProduct(null);
@@ -112,6 +151,9 @@ export function ProductManager({ initialProducts }: { initialProducts: any[] }) 
         opcoesTamanho: ["S", "M", "L", "XL", "XXL"],
         opcoesCor: [],
         highlights: [],
+        especificacoes: [],
+        handle: "",
+        tipo: "ROUPA"
       });
     }
     setCurrentView("editor");
@@ -129,6 +171,8 @@ export function ProductManager({ initialProducts }: { initialProducts: any[] }) 
       const payload = {
         id: editingProduct?.id,
         nome: formData.nome,
+        handle: formData.handle,
+        tipo: formData.tipo,
         descricao: formData.descricao,
         preco: parseFloat(formData.preco),
         precoOriginal: formData.precoOriginal ? parseFloat(formData.precoOriginal) : null,
@@ -142,6 +186,16 @@ export function ProductManager({ initialProducts }: { initialProducts: any[] }) 
         opcoesTamanho: formData.opcoesTamanho,
         opcoesCor: formData.opcoesCor,
         highlights: formData.highlights,
+        materiais: formData.materiais,
+        guiaTamanho: formData.guiaTamanho,
+        detalhesModelo: formData.detalhesModelo,
+        instrucoesCuidado: formData.instrucoesCuidado,
+        especificacoes: formData.especificacoes,
+        variantes: formData.variantes.map((v: any) => ({
+          ...v,
+          price: parseFloat(v.price) || 0,
+          originalPrice: v.originalPrice ? parseFloat(v.originalPrice) : null
+        }))
       };
 
       await upsertProduct(payload);
@@ -195,6 +249,12 @@ export function ProductManager({ initialProducts }: { initialProducts: any[] }) 
                 className={`text-[9px] font-black uppercase tracking-widest transition-all ${currentView === "collections" ? "text-accent" : "text-white/40 hover:text-white"}`}
               >
                 Collections
+              </button>
+              <button
+                onClick={() => setCurrentView("reviews")}
+                className={`text-[9px] font-black uppercase tracking-widest transition-all ${currentView === "reviews" ? "text-accent" : "text-white/40 hover:text-white"}`}
+              >
+                Experience Hub (Reviews)
               </button>
             </div>
           </div>
@@ -278,6 +338,7 @@ export function ProductManager({ initialProducts }: { initialProducts: any[] }) 
       )}
 
       {currentView === "collections" && <CollectionManager />}
+      {currentView === "reviews" && <ReviewManager />}
 
       {currentView === "editor" && (
         <div className="fixed inset-0 z-[200] bg-black flex flex-col animate-in fade-in slide-in-from-right-4 duration-700">
@@ -332,6 +393,24 @@ export function ProductManager({ initialProducts }: { initialProducts: any[] }) 
             {/* LEFT: STUDIO CONTROLS (40%) */}
             <div className="w-[40%] overflow-y-auto custom-scrollbar p-12 space-y-16 border-r border-white/10 bg-[#050505]">
               <section className="space-y-10">
+                 <div className="flex items-center justify-between p-8 bg-white/[0.03] border border-white/10 rounded-[2.5rem]">
+                  <div className="space-y-1">
+                    <h4 className="text-xs font-black text-white uppercase tracking-widest">Asset Category</h4>
+                    <p className="text-[10px] text-white/30 uppercase font-bold">Classify for specialized logic</p>
+                  </div>
+                  <div className="flex gap-2 bg-black p-1.5 rounded-2xl border border-white/10">
+                    {["ROUPA", "PERFUME"].map(t => (
+                      <button
+                        key={t}
+                        onClick={() => setFormData({ ...formData, tipo: t })}
+                        className={`px-6 py-2.5 text-[9px] font-black uppercase tracking-widest rounded-xl transition-all ${formData.tipo === t ? "bg-accent text-black shadow-lg shadow-accent/20" : "text-white/20 hover:text-white"}`}
+                      >
+                        {t}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
                 <div className="flex items-center justify-between p-8 bg-white/[0.03] border border-white/10 rounded-[2.5rem]">
                   <div className="space-y-1">
                     <h4 className="text-xs font-black text-white uppercase tracking-widest">Global Visibility</h4>
@@ -349,9 +428,13 @@ export function ProductManager({ initialProducts }: { initialProducts: any[] }) 
                     <h4 className="text-xs font-black uppercase tracking-luxury">Creative Details</h4>
                   </div>
                   <div className="space-y-6">
-                    <div className="space-y-2">
-                      <label className="text-[9px] font-black uppercase text-white/30 tracking-widest">Asset Identifier</label>
+                     <div className="space-y-2">
+                      <label className="text-[9px] font-black uppercase text-white/30 tracking-widest">Asset Identifier (Title)</label>
                       <input value={formData.nome} onChange={e => setFormData({ ...formData, nome: e.target.value })} className="w-full bg-white/5 border border-white/10 rounded-2xl p-6 text-base text-white font-black uppercase focus:border-accent/40" />
+                    </div>
+                    <div className="space-y-2 opacity-60">
+                      <label className="text-[9px] font-black uppercase text-white/30 tracking-widest">Unique Slug (Handle - SEO Permanent)</label>
+                      <input value={formData.handle} onChange={e => setFormData({ ...formData, handle: e.target.value })} className="w-full bg-white/5 border border-white/10 rounded-2xl p-6 text-[11px] font-mono text-white/60 focus:border-accent/40" placeholder="Auto-generated on creation..." />
                     </div>
                     <div className="grid grid-cols-2 gap-4">
                       <div className="space-y-2">
@@ -444,6 +527,209 @@ export function ProductManager({ initialProducts }: { initialProducts: any[] }) 
                       <button onClick={() => setFormData({ ...formData, opcoesCor: [...(formData.opcoesCor || []), { name: "", hex: "#000000" }] })} className="w-full py-4 border border-dashed border-white/10 rounded-2xl text-[9px] font-black uppercase text-accent hover:text-white transition-all flex items-center justify-center gap-2">
                         <Plus size={14} /> Add Colorway
                       </button>
+                    </div>
+                  </div>
+
+                  <div className="space-y-4 pt-6 border-t border-white/5">
+                    <label className="text-[9px] font-black uppercase text-white/30 tracking-widest">Technical Highlights (Crafstmanship)</label>
+                    <div className="space-y-4">
+                      {(formData.highlights || []).map((h: any, i: number) => (
+                        <div key={i} className="space-y-3 p-6 bg-white/[0.02] border border-white/10 rounded-2xl group relative transition-all hover:bg-white/[0.04]">
+                          <button 
+                            onClick={() => setFormData({ ...formData, highlights: (formData.highlights || []).filter((_: any, idx: number) => idx !== i) })}
+                            className="absolute top-4 right-4 text-white/20 hover:text-rose-500 transition-colors"
+                          >
+                            <X size={16} />
+                          </button>
+                          <div className="space-y-4">
+                            <div className="space-y-1">
+                              <label className="text-[8px] font-black uppercase text-accent tracking-[0.2em]">Accordion Title</label>
+                              <input 
+                                placeholder="e.g. The Heritage Style" 
+                                value={h.title} 
+                                onChange={e => {
+                                  let next = [...(formData.highlights || [])];
+                                  next[i].title = e.target.value;
+                                  setFormData({ ...formData, highlights: next });
+                                }} 
+                                className="w-full bg-transparent text-xs font-black uppercase tracking-widest text-white focus:outline-none placeholder:text-white/10" 
+                              />
+                            </div>
+                            <div className="space-y-1">
+                              <label className="text-[8px] font-black uppercase text-white/20 tracking-[0.2em]">Accordion Content</label>
+                              <textarea 
+                                placeholder="Detailed description for this section..." 
+                                value={h.text} 
+                                onChange={e => {
+                                  let next = [...(formData.highlights || [])];
+                                  next[i].text = e.target.value;
+                                  setFormData({ ...formData, highlights: next });
+                                }} 
+                                className="w-full bg-transparent text-[11px] font-medium text-white/50 focus:outline-none resize-none leading-relaxed min-h-[80px]" 
+                              />
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                      <button 
+                        onClick={() => setFormData({ ...formData, highlights: [...(formData.highlights || []), { title: "", text: "" }] })} 
+                        className="w-full py-4 border border-dashed border-white/10 rounded-2xl text-[9px] font-black uppercase text-accent hover:text-white hover:border-accent/40 hover:bg-accent/5 transition-all flex items-center justify-center gap-2"
+                      >
+                        <Plus size={14} /> Create New Accordion Section
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* ELITE UPGRADE: Technical Specifications (Bullets) */}
+                  <div className="space-y-4 pt-6 border-t border-white/5">
+                    <label className="text-[9px] font-black uppercase text-white/30 tracking-widest">Technical Specifications (Bullets)</label>
+                    <div className="space-y-3">
+                      {(formData.especificacoes || []).map((spec: string, i: number) => (
+                        <div key={i} className="flex gap-4 items-center group">
+                          <div className="w-2 h-2 rounded-full bg-accent/40 group-hover:bg-accent transition-colors shrink-0" />
+                          <input 
+                            placeholder="e.g. Removable, three-piece hood" 
+                            value={spec} 
+                            onChange={e => {
+                              let next = [...(formData.especificacoes || [])];
+                              next[i] = e.target.value;
+                              setFormData({ ...formData, especificacoes: next });
+                            }} 
+                            className="bg-transparent text-xs font-medium text-white/70 focus:text-white focus:outline-none flex-grow" 
+                          />
+                          <button onClick={() => setFormData({ ...formData, especificacoes: (formData.especificacoes || []).filter((_: any, idx: number) => idx !== i) })}>
+                            <X size={14} className="text-white/20 hover:text-rose-500" />
+                          </button>
+                        </div>
+                      ))}
+                      <button 
+                        onClick={() => setFormData({ ...formData, especificacoes: [...(formData.especificacoes || []), ""] })} 
+                        className="w-full py-3 border border-dashed border-white/5 rounded-xl text-[8px] font-black uppercase text-white/20 hover:text-accent hover:border-accent/20 transition-all"
+                      >
+                        + Add spec bullet
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* ELITE UPGRADE: Materials & Composition */}
+                  <div className="space-y-4 pt-6 border-t border-white/5">
+                    <label className="text-[9px] font-black uppercase text-white/30 tracking-widest">Materials & Composition</label>
+                    <div className="space-y-4">
+                      {(formData.materiais || []).map((m: any, i: number) => (
+                        <div key={i} className="flex gap-4 items-center">
+                          <input 
+                            placeholder="Material (e.g. Cotton)" 
+                            value={m.item} 
+                            onChange={e => {
+                              let next = [...(formData.materiais || [])];
+                              next[i].item = e.target.value;
+                              setFormData({ ...formData, materiais: next });
+                            }} 
+                            className="bg-transparent text-xs font-bold text-white focus:outline-none flex-grow" 
+                          />
+                          <input 
+                            placeholder="%" 
+                            value={m.percentage} 
+                            onChange={e => {
+                              let next = [...(formData.materiais || [])];
+                              next[i].percentage = e.target.value;
+                              setFormData({ ...formData, materiais: next });
+                            }} 
+                            className="w-16 bg-transparent text-xs font-bold text-accent text-right focus:outline-none" 
+                          />
+                          <button onClick={() => setFormData({ ...formData, materiais: (formData.materiais || []).filter((_: any, idx: number) => idx !== i) })}>
+                            <X size={14} className="text-white/20 hover:text-rose-500" />
+                          </button>
+                        </div>
+                      ))}
+                      <button onClick={() => setFormData({ ...formData, materiais: [...(formData.materiais || []), { item: "", percentage: "" }] })} className="w-full py-3 border border-dashed border-white/10 rounded-xl text-[9px] font-black uppercase text-white/50 hover:text-white transition-all">
+                        + Add Composition Item
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* ELITE UPGRADE: Pricing Variants (Multi-Price by Size) */}
+                  <div className="space-y-4 pt-6 border-t border-white/5">
+                    <label className="text-[9px] font-black uppercase text-white/30 tracking-widest">Pricing Variants (Size & Bundle Prices)</label>
+                    <div className="space-y-4">
+                      {(formData.variantes || []).map((v: any, i: number) => (
+                        <div key={i} className="grid grid-cols-4 gap-4 p-4 bg-white/[0.02] border border-white/10 rounded-2xl items-center group">
+                          <div className="space-y-1">
+                            <label className="text-[8px] font-black uppercase text-white/20 tracking-widest">Name (e.g. 100ml or S)</label>
+                            <input 
+                              value={v.name} 
+                              onChange={e => {
+                                let next = [...(formData.variantes || [])];
+                                next[i].name = e.target.value;
+                                setFormData({ ...formData, variantes: next });
+                              }} 
+                              className="bg-transparent text-xs font-bold text-white focus:outline-none w-full" 
+                            />
+                          </div>
+                          <div className="space-y-1">
+                            <label className="text-[8px] font-black uppercase text-white/20 tracking-widest">Price (£)</label>
+                            <input 
+                              type="number"
+                              step="0.01"
+                              value={v.price} 
+                              onChange={e => {
+                                let next = [...(formData.variantes || [])];
+                                next[i].price = e.target.value;
+                                setFormData({ ...formData, variantes: next });
+                              }} 
+                              className="bg-transparent text-xs font-bold text-accent focus:outline-none w-full" 
+                            />
+                          </div>
+                          <div className="space-y-1">
+                            <label className="text-[8px] font-black uppercase text-white/20 tracking-widest">Original (£)</label>
+                            <input 
+                              type="number"
+                              step="0.01"
+                              value={v.originalPrice} 
+                              onChange={e => {
+                                let next = [...(formData.variantes || [])];
+                                next[i].originalPrice = e.target.value;
+                                setFormData({ ...formData, variantes: next });
+                              }} 
+                              className="bg-transparent text-xs font-bold text-white/40 focus:outline-none w-full" 
+                            />
+                          </div>
+                          <div className="flex justify-end">
+                            <button onClick={() => setFormData({ ...formData, variantes: (formData.variantes || []).filter((_: any, idx: number) => idx !== i) })}>
+                              <X size={14} className="text-white/20 hover:text-rose-500" />
+                            </button>
+                          </div>
+                        </div>
+                      ))}
+                      <button 
+                        onClick={() => setFormData({ ...formData, variantes: [...(formData.variantes || []), { name: "", price: "", originalPrice: "" }] })} 
+                        className="w-full py-3 border border-dashed border-white/10 rounded-xl text-[9px] font-black uppercase text-accent hover:text-white transition-all flex items-center justify-center gap-2"
+                      >
+                        <Plus size={12} /> Add Price Variation
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* ELITE UPGRADE: Luxury Details */}
+                  <div className="space-y-6 pt-6 border-t border-white/5">
+                    <div className="space-y-2">
+                      <label className="text-[9px] font-black uppercase text-white/30 tracking-widest">Model Information</label>
+                      <input 
+                        placeholder="e.g. Model is 1.88m and wears Size Large"
+                        value={formData.detalhesModelo}
+                        onChange={e => setFormData({ ...formData, detalhesModelo: e.target.value })}
+                        className="w-full bg-white/[0.02] border border-white/5 rounded-xl px-4 py-3 text-xs text-white focus:outline-none focus:border-accent/30 transition-all"
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <label className="text-[9px] font-black uppercase text-white/30 tracking-widest">Care Instructions</label>
+                      <textarea 
+                        placeholder="e.g. Dry clean only. Do not bleach."
+                        value={formData.instrucoesCuidado}
+                        onChange={e => setFormData({ ...formData, instrucoesCuidado: e.target.value })}
+                        className="w-full bg-white/[0.02] border border-white/5 rounded-xl px-4 py-3 text-xs text-white/70 focus:outline-none focus:border-accent/30 transition-all min-h-[80px]"
+                      />
                     </div>
                   </div>
                 </div>

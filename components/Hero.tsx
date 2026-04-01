@@ -5,7 +5,7 @@ import { ResponsiveVideo } from "./ResponsiveVideo";
 
 export function Hero() {
   return (
-    <section className="relative h-[100dvh] w-full flex items-center justify-center overflow-hidden bg-black">
+    <section className="relative h-[100dvh] w-full h-[75dvh] flex items-center justify-center overflow-hidden bg-black">
       {/* Background Video - mobile gets 0.4MB file, desktop gets 38.8MB */}
       <div className="absolute inset-0 z-0">
         <ResponsiveVideo

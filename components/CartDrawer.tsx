@@ -54,7 +54,7 @@ function CartDrawerInner() {
       <div className="relative w-full max-w-lg bg-background shadow-[0_0_100px_rgba(0,0,0,0.5)] flex flex-col h-full border-l border-white/5 animate-in slide-in-from-right duration-700">
         <div className="p-8 flex items-center justify-between border-b border-white/5">
           <div className="flex items-center gap-4">
-            <ShoppingBag size={18} className="text-accent" />
+            <ShoppingBag size={18} className="text-white" />
             <h2 className="text-xl font-black uppercase tracking-luxury text-white">
               Your Selection
             </h2>

@@ -202,6 +202,71 @@ export async function deleteCollection(id: string) {
   revalidatePath("/admin/products"); // Revalidate products page as collections might affect it
 }
 
+export async function setCollectionStatus(collectionName: string, publicado: boolean) {
+  const session = await getServerSession(authOptions);
+  if ((session?.user as any)?.type !== "ADMIN") throw new Error("Unauthorized Admin Only");
+
+  const res = await fetch(`${API_URL}/api/collections/bulk-status`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${(session?.user as any)?.token}`,
+    },
+    body: JSON.stringify({ collectionName, publicado }),
+  });
+
+  if (!res.ok) throw new Error("Failed to update collection status");
+  revalidatePath("/admin/products");
+  revalidatePath("/");
+}
+
+export async function getAdminReviews() {
+  const session = await getServerSession(authOptions);
+  if ((session?.user as any)?.type !== "ADMIN") throw new Error("Unauthorized Admin Only");
+
+  const res = await fetch(`${API_URL}/api/reviews/all`, {
+    cache: "no-store",
+    headers: {
+      Authorization: `Bearer ${(session?.user as any)?.token}`,
+    },
+  });
+  if (!res.ok) return [];
+  return res.json();
+}
+
+export async function updateReview(id: string, data: any) {
+  const session = await getServerSession(authOptions);
+  if ((session?.user as any)?.type !== "ADMIN") throw new Error("Unauthorized Admin Only");
+
+  const res = await fetch(`${API_URL}/api/reviews/${id}`, {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${(session?.user as any)?.token}`,
+    },
+    body: JSON.stringify(data),
+  });
+
+  if (!res.ok) throw new Error("Failed to update review");
+  revalidatePath("/admin/products");
+  return res.json();
+}
+
+export async function deleteReview(id: string) {
+  const session = await getServerSession(authOptions);
+  if ((session?.user as any)?.type !== "ADMIN") throw new Error("Unauthorized Admin Only");
+
+  const res = await fetch(`${API_URL}/api/reviews/${id}`, {
+    method: "DELETE",
+    headers: {
+      Authorization: `Bearer ${(session?.user as any)?.token}`,
+    },
+  });
+
+  if (!res.ok) throw new Error("Failed to delete review");
+  revalidatePath("/admin/products");
+}
+
 export async function updateUserProfile(data: { name: string; telefone: string; localizacao: string }) {
   const session = await getServerSession(authOptions);
   if (!session?.user?.email) throw new Error("Unauthorized");
