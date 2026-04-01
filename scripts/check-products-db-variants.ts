@@ -14,7 +14,7 @@ async function checkProducts() {
       nome: true,
       opcoesTamanho: true,
       variantes: true
-    }
+    } as any
   });
 
   console.log(JSON.stringify(products, null, 2));
