@@ -28,8 +28,8 @@ async function main() {
     await prisma.produto.update({
       where: { id: p.id },
       data: {
-        variantes: variants as any
-      }
+        variantes: variants
+      } as any
     });
   }
 
