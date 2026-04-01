@@ -14,7 +14,7 @@ async function main() {
     },
     data: {
         tipo: "PERFUME"
-    }
+    } as any
   });
 
   console.log(`✅ Successfully categorized ${fragrancesCount.count} products as PERFUME.`);
@@ -28,7 +28,7 @@ async function main() {
     },
     data: {
         tipo: "ROUPA"
-    }
+    } as any
   });
 
   console.log(`✅ Successfully categorized ${clothingCount.count} products as ROUPA.`);
