@@ -76,7 +76,7 @@ async function main() {
         instrucoesCuidado: data.care,
         mediaAvaliacoes: 4.8 + (Math.random() * 0.2),
         totalAvaliacoes: 12 + Math.floor(Math.random() * 50)
-      }
+      } as any
     });
 
     // 2. Seed some reviews
