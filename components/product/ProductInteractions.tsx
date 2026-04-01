@@ -1,4 +1,5 @@
 "use client";
+// Noir Stabilization: Refined Interaction Logic
 
 import { useState, useEffect } from "react";
 import { useCart } from "@/lib/CartContext";
