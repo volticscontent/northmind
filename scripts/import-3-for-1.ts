@@ -68,7 +68,7 @@ async function import3For1() {
           fotos: fotos,
           fotoPrincipal: fotoPrincipal,
           publicado: true
-        },
+        } as any,
         create: {
           nome: title,
           handle: handle,
@@ -81,7 +81,7 @@ async function import3For1() {
           publicado: true,
           totalAvaliacoes: Math.floor(Math.random() * 20) + 5,
           mediaAvaliacoes: 4.5 + Math.random() * 0.5
-        }
+        } as any
       });
       importedCount++;
       if (importedCount % 10 === 0) console.log(`✅ Imported ${importedCount} products...`);
