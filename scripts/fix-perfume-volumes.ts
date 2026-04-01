@@ -16,10 +16,10 @@ async function main() {
         { opcoesTamanho: { has: "L" } },
         { opcoesTamanho: { equals: [] } }
       ]
-    },
+    } as any,
     data: {
       opcoesTamanho: defaultFragranceSizes
-    }
+    } as any
   });
 
   console.log(`✅ Successfully updated ${updatedCount.count} perfumes with ML volumes instead of clothing sizes.`);
