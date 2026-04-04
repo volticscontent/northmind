@@ -1,16 +1,28 @@
 "use client";
 
 import Link from "next/link";
-import { ResponsiveVideo } from "./ResponsiveVideo";
+import { FrameSequence } from "./FrameSequence";
+import { useEffect, useState } from "react";
 
 export function Hero() {
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const checkMobile = () => setIsMobile(window.innerWidth < 768);
+    checkMobile();
+    window.addEventListener("resize", checkMobile);
+    return () => window.removeEventListener("resize", checkMobile);
+  }, []);
+
   return (
     <section className="relative h-[90dvh] md:h-[100dvh] w-full flex items-center justify-center overflow-hidden bg-black">
-      {/* Background Video - mobile gets 0.4MB file, desktop gets 38.8MB */}
+      {/* Background Frame Sequence - Bypasses iOS native player issues */}
       <div className="absolute inset-0 z-0">
-        <ResponsiveVideo
-          desktopSrc="/assets/hero-video.mp4"
-          mobileSrc="/assets/hero-video-mobile.mp4"
+        <FrameSequence
+          key={isMobile ? "mobile" : "desktop"}
+          basePath={isMobile ? "/assets/hero-frames/mobile" : "/assets/hero-frames/desktop"}
+          frameCount={492}
+          fps={40}
           poster="/assets/hero-video.png"
           className="absolute inset-0 h-full w-full object-cover opacity-50 grayscale contrast-125"
         />

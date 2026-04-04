@@ -253,8 +253,8 @@ export function ProductInteractions({ product, allProducts = [] }: ProductIntera
       </div>
 
       {/* Bundle Selection */}
-      <div className="space-y-6">
-        <div className="flex items-center gap-4">
+      <div className="space-y-4">
+        <div className="flex items-center">
           <div className="h-[1px] flex-grow bg-white/10" />
           <h3 className="text-sm font-black uppercase tracking-luxury text-white/90">
             Bundle & Save
@@ -263,9 +263,9 @@ export function ProductInteractions({ product, allProducts = [] }: ProductIntera
         </div>
 
         {bundles.map((bundle) => (
-          <div key={bundle.id} className="relative pt-3">
+          <div key={bundle.id} className="relative">
             {bundle.isPopular && (
-              <div className="absolute top-0 inset-x-0 flex justify-center z-20">
+              <div className="absolute top-[-12px] inset-x-0 flex justify-end z-20">
                 <div className="bg-black px-4 h-6 flex items-center justify-center rounded-full border border-white/10 shadow-lg">
                   <span className="text-[9px] font-black uppercase tracking-widest text-white whitespace-nowrap">
                     Most Popular

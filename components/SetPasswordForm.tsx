@@ -50,7 +50,7 @@ export function SetPasswordForm({ userId, orderId, email }: { userId: string, or
         setError("Senha criada, mas falha ao auto-logar. Faça login manualmente.");
         setTimeout(() => router.push("/login"), 3000);
       } else {
-        router.push("/customer");
+        router.push("/user");
       }
 
     } catch (err: any) {

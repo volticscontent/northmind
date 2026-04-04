@@ -27,30 +27,32 @@ export function ProductGallery({ images, title, discount, opcoesCor, isFragrance
     <>
       {/* Visualização Desktop (Thumbnails Esquerda + Foto Principal) */}
       <div className="hidden md:flex gap-4 items-start">
-        {/* Carrossel Vertical de Miniaturas */}
-        <div
-          className="w-20 lg:w-24 flex-shrink-0 flex flex-col gap-3 overflow-y-auto scrollbar-hide snap-y max-h-[calc(100vh-8rem)]"
-          style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
-        >
-          {safeImages.map((imgSrc, i) => (
-            <button
-              key={i}
-              onClick={() => setActiveIndex(i)}
-              className={`relative bg-white w-full aspect-[4/4] shrink-0 snap-start overflow-hidden transition-all ${i === activeIndex
-                ? "border-2 border-accent scale-100 opacity-100"
-                : "border border-white/10 opacity-50 hover:opacity-100 cursor-pointer"
-                }`}
-            >
-              <Image
-                src={imgSrc}
-                alt={`${title} Thumbnail ${i + 1}`}
-                fill
-                sizes="100px"
-                className="object-cover"
-              />
-            </button>
-          ))}
-        </div>
+        {/* Carrossel Vertical de Miniaturas - Só aparece se houver fotos extras */}
+        {safeImages.length > 1 && (
+          <div
+            className="w-20 lg:w-24 flex-shrink-0 flex flex-col gap-3 overflow-y-auto scrollbar-hide snap-y max-h-[calc(100vh-8rem)]"
+            style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+          >
+            {safeImages.map((imgSrc, i) => (
+              <button
+                key={i}
+                onClick={() => setActiveIndex(i)}
+                className={`relative bg-white w-full aspect-[4/4] shrink-0 snap-start overflow-hidden transition-all ${i === activeIndex
+                  ? "border-2 border-accent scale-100 opacity-100"
+                  : "border border-white/10 opacity-50 hover:opacity-100 cursor-pointer"
+                  }`}
+              >
+                <Image
+                  src={imgSrc}
+                  alt={`${title} Thumbnail ${i + 1}`}
+                  fill
+                  sizes="100px"
+                  className="object-cover"
+                />
+              </button>
+            ))}
+          </div>
+        )}
 
         {/* Foto Principal Desktop */}
         <div
@@ -95,27 +97,29 @@ export function ProductGallery({ images, title, discount, opcoesCor, isFragrance
           )}
         </div>
 
-        {/* Carrossel de Miniaturas */}
-        <div className="flex overflow-x-auto gap-[1px] pb-2 snap-x scrollbar-hide" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
-          {safeImages.map((imgSrc, i) => (
-            <button
-              key={i}
-              onClick={() => setActiveIndex(i)}
-              className={`relative w-[35%] aspect-[5/5] shrink-0 snap-start overflow-hidden transition-all ${i === activeIndex
-                ? "border border-yellow-300 bg-white scale-100 opacity-100"
-                : "border border-white/60 bg-white opacity-60 hover:opacity-100"
-                }`}
-            >
-              <Image
-                src={imgSrc}
-                alt={`${title} Thumbnail ${i + 1}`}
-                fill
-                sizes="80px"
-                className="object-cover"
-              />
-            </button>
-          ))}
-        </div>
+        {/* Carrossel de Miniaturas Mobile - Só aparece se houver fotos extras */}
+        {safeImages.length > 1 && (
+          <div className="flex overflow-x-auto gap-[1px] pb-2 snap-x scrollbar-hide" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
+            {safeImages.map((imgSrc, i) => (
+              <button
+                key={i}
+                onClick={() => setActiveIndex(i)}
+                className={`relative w-[35%] aspect-[5/5] shrink-0 snap-start overflow-hidden transition-all ${i === activeIndex
+                  ? "border border-yellow-300 bg-white scale-100 opacity-100"
+                  : "border border-white/60 bg-white opacity-60 hover:opacity-100"
+                  }`}
+              >
+                <Image
+                  src={imgSrc}
+                  alt={`${title} Thumbnail ${i + 1}`}
+                  fill
+                  sizes="80px"
+                  className="object-cover"
+                />
+              </button>
+            ))}
+          </div>
+        )}
       </div>
     </>
   );

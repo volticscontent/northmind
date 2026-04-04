@@ -40,7 +40,7 @@ export function ProductDetail({ product, allProducts, searchParams }: ProductDet
           <span className="w-1 h-1 rounded-full bg-white/80" />
           <span className="text-white">{product.collection}</span>
         </nav>
-        <h1 className="text-3xl md:text-4xl font-black px-4 lg:px-0 md:px-0 uppercase tracking-tighter mb-2 leading-[0.9] text-white">
+        <h1 className="text-3xl md:text-4xl font-black px-4 lg:px-0 md:px-0 uppercase tracking-tighter mb-2 leading-[0.9] text-white truncate">
           {product.title}
         </h1>
 
@@ -58,19 +58,25 @@ export function ProductDetail({ product, allProducts, searchParams }: ProductDet
         <div className="grid grid-cols-1 md:grid-cols-2 gap-5 md:gap-20 items-start">
           {/* Product Images - STICKY on Desktop */}
           <div className="md:sticky md:top-28 self-start">
-            <ProductGallery
-              images={imagesToShow}
-              title={product.title}
-              discount={discount}
-              opcoesCor={product.opcoesCor}
-              isFragrance={product.collection?.toLowerCase().includes('fragrance') || product.collection?.toLowerCase().includes('offer')}
-            />
+            {imagesToShow.length > 0 ? (
+              <ProductGallery
+                images={imagesToShow}
+                title={product.title}
+                discount={discount}
+                opcoesCor={product.opcoesCor}
+                isFragrance={product.collection?.toLowerCase().includes('fragrance') || product.collection?.toLowerCase().includes('offer')}
+              />
+            ) : (
+              <div className="aspect-[4/5] bg-white/5 border border-white/10 rounded-xl flex items-center justify-center">
+                <p className="text-[10px] font-black uppercase tracking-widest text-white/20 italic">No assets available for this item</p>
+              </div>
+            )}
           </div>
 
           {/* Right Column - Content (Server Rendered) */}
           <div className="flex px-4 flex-col justify-center">
 
-            <div className="flex items-baseline gap-4 mb-8">
+            <div className="flex items-baseline gap-4 mb-4">
               <span className="text-4xl font-black text-white tracking-tighter">
                 £{safePrice.toFixed(2)}
               </span>
@@ -149,9 +155,9 @@ export function ProductDetail({ product, allProducts, searchParams }: ProductDet
                     title: (product.tipo === "PERFUME" || product.collection?.toLowerCase().includes("fragrance")) ? "Fragrance Notes & Care" : "Fabrication & Care",
                     icon: <ShieldCheck size={16} />,
                     content: (
-                      <div className="space-y-6">
+                      <div className="space-y-2">
                         {product.materiais && product.materiais.length > 0 && (
-                          <div className="flex flex-wrap gap-x-8 gap-y-4">
+                          <div className="flex flex-wrap gap-x-8 gap-y-2">
                             {product.materiais.map((m, i) => (
                               <div key={i} className="space-y-1">
                                 <p className="text-[10px] font-black uppercase tracking-widest text-[#C5A358]">{m.percentage}</p>
@@ -233,11 +239,11 @@ export function ProductDetail({ product, allProducts, searchParams }: ProductDet
 
           <div className="relative group">
             {/* Duplicated for seamless loop - 30 items for ultra-smooth transition */}
-            <div className="flex animate-marquee gap-10 py-12">
+            <div className="flex animate-marquee gap-5 py-12">
               {[1, 2, 3, 4, 5, 1, 2, 3, 4, 5, 1, 2, 3, 4, 5, 1, 2, 3, 4, 5, 1, 2, 3, 4, 5, 1, 2, 3, 4, 5].map((imageNum, i) => (
                 <div
                   key={i}
-                  className="relative w-[200px] md:w-[300px] aspect-[10/14] rounded-3xl flex-shrink-0 border border-white/90 transition-transform duration-700 hover:scale-[1.05] overflow-hidden"
+                  className="relative w-[250px] md:w-[300px] aspect-[10/14] rounded-3xl flex-shrink-0 border border-white/90 transition-transform duration-700 hover:scale-[1.05] overflow-hidden"
                 >
                   <Image
                     src={`/assets/community/${imageNum}.png`}

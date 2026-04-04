@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { loadStripe, StripeElementsOptions } from "@stripe/stripe-js";
 import { Elements } from "@stripe/react-stripe-js";
+import Image from "next/image";
 import CheckoutForm, { OrderItem } from "@/components/CheckoutForm";
 import { useCart } from "@/lib/CartContext";
 import { API_URL } from "@/lib/api";
@@ -15,11 +16,12 @@ const stripePromise = loadStripe(
 
 
 export default function CheckoutPage() {
-  const { cart } = useCart();
+  const { cart, totalPrice } = useCart();
   const [clientSecret, setClientSecret] = useState("");
   const [initError, setInitError] = useState("");
+  const totalAmount = totalPrice;
 
-  // Transforma os itens do cart global para o formato do Checkout
+  // Transforma os itens do cart global para o formato do CheckoutForm
   const orderItems: OrderItem[] = cart.map((item) => ({
     id: item.id,
     name: item.title,
@@ -27,16 +29,11 @@ export default function CheckoutPage() {
     price: item.price,
     quantity: item.quantity,
     imageUrl: item.images[0],
-    discount: 0,
+    discount: Math.max(0, (item.originalPrice || 0) - item.price),
   }));
 
-  // Calcula o total dos items (preço com desconto * quantidade)
-  const totalAmount = orderItems.reduce((sum, item) => {
-    const itemPrice = item.price - (item.discount || 0);
-    return sum + itemPrice * item.quantity;
-  }, 0);
-
   useEffect(() => {
+    console.log("🛒 Total no Carrinho (GBP):", totalAmount);
     if (totalAmount <= 0) return; // Se carrinho zerado, não tenta criar o pagamento
 
     // Cria o PaymentIntent via API route
@@ -47,7 +44,7 @@ export default function CheckoutPage() {
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             amount: totalAmount,
-            currency: "brl",
+            currency: "gbp",
           }),
         });
 
@@ -76,7 +73,7 @@ export default function CheckoutPage() {
       variables: {
         colorPrimary: "#000000", // Cor principal azul
         colorBackground: "#ffffff",
-        colorText: "#111827",
+        colorText: "#0c0c0c",
         colorDanger: "#dc2626",
         fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
         spacingUnit: "4px",
@@ -90,8 +87,8 @@ export default function CheckoutPage() {
           border: "1px solid #d1d5db",
         },
         ".Input:focus": {
-          border: "1px solid #2c2c2c",
-          boxShadow: "0 0 0 1px #363636",
+          border: "1px solid #838383",
+          boxShadow: "0 0 0 1px #838383",
         },
         ".Label": {
           color: "#6b7280",
@@ -104,6 +101,22 @@ export default function CheckoutPage() {
 
   return (
     <div className="checkout-page-wrapper">
+      {/* North Mind Logo Header */}
+      <header className="checkout-header">
+        <div className="max-w-7xl mx-auto px-4 py-6 flex justify-center md:justify-start">
+          <a href="/" className="group transition-all duration-500">
+            <Image
+              src="/assets/logo.svg"
+              alt="NORTH MIND"
+              width={160}
+              height={50}
+              priority
+              className="h-8 md:h-10 w-auto opacity-100 hover:opacity-70 transition-opacity"
+            />
+          </a>
+        </div>
+      </header>
+
       {totalAmount <= 0 ? (
         <div className="error-state">
           <p className="error-text">O seu carrinho está vazio.</p>
@@ -118,7 +131,7 @@ export default function CheckoutPage() {
         </div>
       ) : clientSecret ? (
         <Elements stripe={stripePromise} options={options}>
-          <CheckoutForm items={orderItems} />
+          <CheckoutForm items={orderItems} clientSecret={clientSecret} />
         </Elements>
       ) : (
         <div className="loading-state">
@@ -131,6 +144,11 @@ export default function CheckoutPage() {
         .checkout-page-wrapper {
            min-height: 100vh;
            background-color: #f5f5f5;
+        }
+
+        .checkout-header {
+           background-color: #000000;
+           border-bottom: 1px solid #adadad;
         }
 
         .loading-state, .error-state {

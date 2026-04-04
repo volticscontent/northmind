@@ -4,6 +4,7 @@ import { Search, Lock, ChevronDown } from "lucide-react";
 import { useSession } from "next-auth/react";
 import axios from "axios";
 import Link from "next/link";
+import { trackBeginCheckout } from "@/lib/tracking";
 import { motion, AnimatePresence } from "framer-motion";
 import { API_URL } from "@/lib/api";
 
@@ -30,9 +31,10 @@ export type OrderItem = {
 
 interface CheckoutFormProps {
   items: OrderItem[];
+  clientSecret: string;
 }
 
-export default function CheckoutForm({ items }: CheckoutFormProps) {
+export default function CheckoutForm({ items, clientSecret }: CheckoutFormProps) {
   const stripe = useStripe();
   const elements = useElements();
   const { data: session, status } = useSession();
@@ -51,6 +53,7 @@ export default function CheckoutForm({ items }: CheckoutFormProps) {
   const [postcode, setPostcode] = useState("");
   const [county, setCounty] = useState("");
   const [saveInfo, setSaveInfo] = useState(false);
+  const icTriggered = React.useRef(false);
 
   // Auto-fill form if session exists
   useEffect(() => {
@@ -70,15 +73,61 @@ export default function CheckoutForm({ items }: CheckoutFormProps) {
   const [errorMessage, setErrorMessage] = useState("");
 
   // Cálculo de totais
+  // Subtotal baseia-se no preço ORIGINAL para que a conta "Subtotal - Economia = Total" faça sentido
   const subtotal = items.reduce(
-    (acc, item) => acc + item.price * item.quantity,
+    (acc, item) => acc + ( (item.discount ? (item.price + item.discount) : item.price) * item.quantity ),
     0,
   );
+  
   const totalDiscounts = items.reduce(
     (acc, item) => acc + (item.discount || 0) * item.quantity,
     0,
   );
-  const total = subtotal - totalDiscounts;
+  
+  // O Total é sempre a soma do que o cliente realmente vai pagar (preços já descontados)
+  const total = items.reduce(
+    (acc, item) => acc + item.price * item.quantity,
+    0,
+  );
+
+  // Gatilho antecipado para Initiate Checkout (assim que preencher o básico)
+  const handleEarlyIC = React.useCallback(async () => {
+    if (icTriggered.current || !email || !phone || !firstName) return;
+    
+    icTriggered.current = true;
+    const utmifyId = localStorage.getItem('utmify_id') || localStorage.getItem('success-id');
+    const utmSource = localStorage.getItem('utm_source');
+
+    try {
+      console.log('🚀 FRONTEND: Sending Early IC Tracking (Backend + Pixel)...');
+      
+      // Browser Pixel Tracking
+      trackBeginCheckout(
+        items.map(i => ({ id: i.id, title: i.name, price: i.price, quantity: i.quantity })),
+        total
+      );
+
+      await axios.post(`${API_URL}/api/payment/track-ic`, {
+        customer: {
+          name: `${firstName} ${lastName}`,
+          email,
+          phone: `${selectedCountry.code}${phone}`
+        },
+        trackingParameters: {
+          utmify_id: utmifyId,
+          utm_source: utmSource,
+          utm_medium: localStorage.getItem('utm_medium'),
+          utm_campaign: localStorage.getItem('utm_campaign')
+        },
+        amount: total,
+        products: items.map(i => ({ id: i.id, name: i.name, quantity: i.quantity, priceInCents: Math.round(i.price * 100) }))
+      });
+      console.log('✅ Early IC Tracking Sent Successfully');
+    } catch (e) {
+      console.warn('⚠️ Early IC failed', e);
+      icTriggered.current = false; // Permite tentar novamente no Pay Now
+    }
+  }, [email, phone, firstName, lastName, selectedCountry, total, items]);
 
   // Formatação de moeda - British Heritage uses GBP
   const formatCurrency = (value: number) => {
@@ -99,11 +148,36 @@ export default function CheckoutForm({ items }: CheckoutFormProps) {
     setErrorMessage("");
 
     try {
+      // --- Track Initiate Checkout (IC) S2S (Final Fallback) ---
+      const utmifyId = localStorage.getItem('utmify_id') || localStorage.getItem('success-id');
+      const utmSource = localStorage.getItem('utm_source');
+      
+      if (!icTriggered.current) {
+        icTriggered.current = true;
+        axios.post(`${API_URL}/api/payment/track-ic`, {
+          customer: {
+            name: `${firstName} ${lastName}`,
+            email,
+            phone: `${selectedCountry.code}${phone}`
+          },
+          trackingParameters: {
+            utmify_id: utmifyId,
+            utm_source: utmSource,
+            utm_medium: localStorage.getItem('utm_medium'),
+            utm_campaign: localStorage.getItem('utm_campaign')
+          },
+          amount: total,
+          products: items.map(i => ({ id: i.id, name: i.name, quantity: i.quantity, priceInCents: Math.round(i.price * 100) }))
+        }).catch(e => console.warn('IC tracking fallback failed', e));
+      }
+
       // 1. Create Order in Database (PENDENTE/PAGO)
+      const cleanTotal = Number(total.toFixed(2));
       const { data: orderResponse } = await axios.post(`${API_URL}/api/orders`, {
         items,
-        total,
+        total: cleanTotal,
         status: "PAGO", // Simplificado para este fluxo direto
+        userEmail: session?.user?.email, // Envia email da sessão se logado
         customerInfo: {
           email,
           phone,
@@ -128,11 +202,29 @@ export default function CheckoutForm({ items }: CheckoutFormProps) {
         return;
       }
 
-      // 3. Confirm Stripe Payment
+      // 3. Update Stripe Metadata with Customer & UTMify details
+      const intentId = clientSecret ? clientSecret.split('_secret')[0] : null;
+
+      if (intentId) {
+        await axios.post(`${API_URL}/api/payment/update-metadata`, {
+          intentId,
+          metadata: {
+            customer_name: `${firstName} ${lastName}`,
+            customer_email: email,
+            customer_phone: `${selectedCountry.code} ${phone}`,
+            utmify_id: utmifyId,
+            utm_source: utmSource,
+            order_id: orderResponse.id,
+            user_id: orderResponse.userId
+          }
+        });
+      }
+
+      // 4. Confirm Stripe Payment
       const { error } = await stripe.confirmPayment({
         elements,
         confirmParams: {
-          return_url: `${window.location.origin}/checkout/success?o=${orderResponse.id}&u=${orderResponse.userId}`,
+          return_url: `${window.location.origin}/sucesso?o=${orderResponse.id}&u=${orderResponse.userId}&utmify_id=${utmifyId}`,
           payment_method_data: {
             billing_details: {
               name: `${firstName} ${lastName}`,
@@ -161,7 +253,9 @@ export default function CheckoutForm({ items }: CheckoutFormProps) {
         }
       }
     } catch (err: any) {
-      setErrorMessage(err.response?.data || "Error processing order.");
+      console.error("CHECKOUT_SUBMIT_ERROR:", err);
+      const serverMessage = err.response?.data?.message || err.response?.data?.error || err.message;
+      setErrorMessage(serverMessage || "Error processing order. Please try again.");
     }
 
     setIsLoading(false);
@@ -199,6 +293,7 @@ export default function CheckoutForm({ items }: CheckoutFormProps) {
                 placeholder="Email address"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
+                onBlur={handleEarlyIC}
                 required
               />
             </div>
@@ -218,6 +313,7 @@ export default function CheckoutForm({ items }: CheckoutFormProps) {
                 placeholder="Phone number"
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
+                onBlur={handleEarlyIC}
                 required
               />
 
@@ -277,6 +373,7 @@ export default function CheckoutForm({ items }: CheckoutFormProps) {
               placeholder="First name"
               value={firstName}
               onChange={(e) => setFirstName(e.target.value)}
+              onBlur={handleEarlyIC}
               required
             />
             <input
@@ -285,6 +382,7 @@ export default function CheckoutForm({ items }: CheckoutFormProps) {
               placeholder="Last name"
               value={lastName}
               onChange={(e) => setLastName(e.target.value)}
+              onBlur={handleEarlyIC}
               required
             />
           </div>
@@ -357,7 +455,7 @@ export default function CheckoutForm({ items }: CheckoutFormProps) {
           </div>
           <div className="shipping-card selected">
             <div className="shipping-left">
-              <span className="shipping-method">Free Shipping</span>
+              <span className="shipping-method">Shipping</span>
             </div>
             <span className="shipping-price">FREE</span>
           </div>
@@ -436,7 +534,7 @@ export default function CheckoutForm({ items }: CheckoutFormProps) {
                   )}
                   <span>
                     {formatCurrency(
-                      (item.price - (item.discount || 0)) * item.quantity,
+                      item.price * item.quantity,
                     )}
                   </span>
                 </div>
@@ -451,7 +549,7 @@ export default function CheckoutForm({ items }: CheckoutFormProps) {
             </div>
             <div className="total-row">
               <span className="total-label">Shipping</span>
-              <span className="total-value green">FREE</span>
+              <span className="total-value green">£0.00</span>
             </div>
             {totalDiscounts > 0 && (
               <div className="total-row">
@@ -656,7 +754,10 @@ export default function CheckoutForm({ items }: CheckoutFormProps) {
         .shipping-price {
           font-size: 14px;
           font-weight: 600;
-          color: #1eaa25;
+          color: #ffffff;
+          background-color: #1eaa25;
+          padding: 2px 4px;
+          border-radius: 4px;
         }
 
         .secure-text {
@@ -812,7 +913,7 @@ export default function CheckoutForm({ items }: CheckoutFormProps) {
 
         .item-discount {
           text-decoration: line-through;
-          color: #f87171;
+          color: #e4e4e4;
           font-size: 12px;
         }
 
@@ -834,7 +935,7 @@ export default function CheckoutForm({ items }: CheckoutFormProps) {
         }
 
         .total-value.green {
-          color: #14f366;
+          color: #ffffff;
         }
 
         .savings-value {

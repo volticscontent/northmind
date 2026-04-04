@@ -27,7 +27,7 @@ export const metadata: Metadata = {
   title: "North Mind | Premium British Heritage",
   description: "Premium British Heritage menswear. Crafted for durability and contemporary sophistication.",
   other: {
-    'apple-mobile-web-app-capable': 'yes',
+    'mobile-web-app-capable': 'yes',
     'apple-mobile-web-app-status-bar-style': 'black-translucent',
   },
 };
@@ -38,7 +38,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={cn("dark", "font-sans", inter.variable)}>
+    <html lang="en" className={cn("dark", "font-sans", inter.variable)} suppressHydrationWarning>
       <head>
         <link rel="apple-touch-icon" href="/assets/logo.svg" />
       </head>
@@ -48,6 +48,7 @@ export default function RootLayout({
           src="https://cdn.utmify.com.br/scripts/utms/latest.js" 
           data-utmify-prevent-xcod-sck="" 
           data-utmify-prevent-subids="" 
+          data-utmify-pixel={process.env.NEXT_PUBLIC_UTMIFY_PIXEL_ID}
           strategy="afterInteractive"
         />
         
@@ -62,7 +63,7 @@ export default function RootLayout({
             t.src=v;s=b.getElementsByTagName(e)[0];
             s.parentNode.insertBefore(t,s)}(window, document,'script',
             'https://connect.facebook.net/en_US/fbevents.js');
-            fbq('init', '636389112021100');
+            fbq('init', '${process.env.NEXT_PUBLIC_FB_PIXEL_ID || '636389112021100'}');
             fbq('track', 'PageView');
           `}
         </Script>
@@ -83,7 +84,7 @@ export default function RootLayout({
                 var r = d.getElementsByTagName("script")[0]; r.parentNode.insertBefore(i, r)
               };
               
-              w.ttq.load('D4LDB1RC77UDM7TK2810');
+              w.ttq.load('${process.env.NEXT_PUBLIC_TIKTOK_PIXEL_ID || 'D4LDB1RC77UDM7TK2810'}');
               w.ttq.page();
             }(window, document);
           `}

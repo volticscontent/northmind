@@ -46,6 +46,9 @@ export async function sendConversionToUtmfy(data: UtmfyConversionData): Promise<
       return false;
     }
 
+    console.log('📤 Sending to UTMify:', utmfyWebhookUrl);
+    console.log('📝 Payload:', JSON.stringify(data, null, 2));
+
     const response = await fetch(utmfyWebhookUrl, {
       method: 'POST',
       headers: {
@@ -56,11 +59,16 @@ export async function sendConversionToUtmfy(data: UtmfyConversionData): Promise<
     });
 
     if (response.ok) {
-      console.log('✅ Conversion sent to UTMify:', data.orderId);
+      const respData = await response.json().catch(() => ({}));
+      console.log('✅ UTMify Success Response:', respData);
       return true;
     } else {
       const errorText = await response.text();
-      console.error('❌ UTMify error:', response.status, errorText);
+      console.error('❌ UTMify API Error:', {
+        status: response.status,
+        statusText: response.statusText,
+        body: errorText
+      });
       return false;
     }
   } catch (error) {

@@ -2,6 +2,7 @@
 
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { Product } from "@/lib/data-loader";
+import { trackAddToCart } from "@/lib/tracking";
 
 interface CartItem extends Product {
   quantity: number;
@@ -59,6 +60,10 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       }
       return [...prev, { ...product, quantity: 1, selectedSize: size }];
     });
+    
+    // Tracking
+    trackAddToCart(product, 1);
+    
     setIsDrawerOpen(true);
   };
 

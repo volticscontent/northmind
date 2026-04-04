@@ -18,6 +18,8 @@ export async function handlePurchaseTracking(paymentIntentId: string, utmifyId?:
       expand: ['customer', 'payment_method'],
     });
 
+    console.log('📦 Stripe Metadata Retrieved:', paymentIntent.metadata);
+
     if (paymentIntent.status !== 'succeeded') {
       console.warn('⚠️ Tracking attempt for non-successful payment:', paymentIntent.status);
       return { success: false, error: 'Payment not successful' };

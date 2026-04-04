@@ -44,7 +44,7 @@ export function ProductCarousel({ products, title }: ProductCarouselProps) {
 
   return (
     <section className="pt-12 pb-2 px-2 md:px-8 max-w-[1600px] mx-auto w-full group/section">
-      <div className="flex items-end justify-between mb-8 md:mb-12 border-b border-white/5 pb-6">
+      <div className="flex items-end justify-between mb-8 md:mb-12 pb-4">
         <div className="space-y-1">
           <span className="text-[9px] uppercase font-black tracking-[0.5em] text-accent/60 pl-2">
             Heritage Collection

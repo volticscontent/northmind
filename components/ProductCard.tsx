@@ -21,9 +21,17 @@ export function ProductCard({ product, priority = false, onClick }: ProductCardP
 
   // Elite Pricing Logic: Check if there are variants with different prices
   const variants = product.variantes || [];
+  const isFragrance = product.tipo === "PERFUME" || product.collection?.toLowerCase().includes("fragrance");
+  
+  // Para perfumes, priorizamos o preço da variante de 100ml se disponível, 
+  // pois é a variante selecionada por padrão na página do produto.
+  const defaultVariant = isFragrance 
+    ? variants.find((v: any) => v.label === "100ml" || v.name === "100ml")
+    : null;
+
   const prices = variants.map((v: any) => Number(v.price)).filter((p: number) => !isNaN(p) && p > 0);
-  const minPrice = prices.length > 0 ? Math.min(...prices) : product.price;
-  const hasPriceVariation = prices.length > 1 && Math.max(...prices) !== Math.min(...prices);
+  const minPrice = defaultVariant ? Number(defaultVariant.price) : (prices.length > 0 ? Math.min(...prices) : product.price);
+  const hasPriceVariation = !defaultVariant && prices.length > 1 && Math.max(...prices) !== Math.min(...prices);
 
   // Rating Stars Utility
   const rating = product.mediaAvaliacoes || 5;

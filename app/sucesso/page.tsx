@@ -4,69 +4,89 @@ import React, { Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { CheckCircle } from "lucide-react";
 import Link from "next/link";
+import { SetPasswordForm } from "@/components/SetPasswordForm";
+import { trackPurchase } from "@/lib/tracking";
 
 function SuccessContent() {
   const searchParams = useSearchParams();
   const paymentIntentId = searchParams.get("payment_intent");
-  const [orderDetails, setOrderDetails] = React.useState<any>(null);
+  const orderId = searchParams.get("o");
+  const userId = searchParams.get("u");
+
+  const [email, setEmail] = React.useState("");
+  const [hasPassword, setHasPassword] = React.useState(true);
   const [loading, setLoading] = React.useState(true);
   const dataRef = React.useRef(false); // Ref to avoid double tracking trigger
 
   React.useEffect(() => {
-    if (!paymentIntentId || dataRef.current) return;
+    console.log("✅ Success Page Loaded. PI ID:", paymentIntentId);
+    
+    if (!paymentIntentId || dataRef.current) {
+      if (dataRef.current) console.log("ℹ️ Tracking already processed for this session.");
+      return;
+    }
     
     // Mark as processed
     dataRef.current = true;
 
     async function processTracking() {
       try {
-        // Capture tracking IDs from browser
-        const utmifyId = typeof window !== 'undefined' ? localStorage.getItem('utmify_id') : null;
+        // --- 1. S2S AND PIXEL TRACKING ---
+        const utmifyId = typeof window !== 'undefined' 
+          ? (searchParams.get("utmify_id") || 
+             searchParams.get("success-id") || 
+             localStorage.getItem('utmify_id') || 
+             localStorage.getItem('success-id')) 
+          : null;
 
-        // Call Server Action for UTMify & Stripe
-        const { handlePurchaseTracking } = await import("@/lib/actions/tracking");
-        const result = await handlePurchaseTracking(paymentIntentId, utmifyId);
+        console.log("🚀 SUCCESS_PAGE: Notifying Backend for UTMify Tracking...");
+        
+        const axios = (await import("axios")).default;
+        const { API_URL } = await import("@/lib/api");
+        
+        if (paymentIntentId) {
+          const response = await axios.post(`${API_URL}/api/payment/track-purchase`, {
+            intentId: paymentIntentId,
+            utmifyIdManual: utmifyId
+          });
+          console.log("📊 BACKEND_RESPONSE:", response.data);
+          
+          if (response.data.success) {
+            const { trackPurchase, trackUtmfyPurchase } = await import("@/lib/tracking");
+            
+            // Meta & TikTok (GBP)
+            trackPurchase({ 
+              id: paymentIntentId as string, 
+              amount: response.data.amountInGBP || 0 
+            });
 
-        if (result.success && result.order) {
-          setOrderDetails(result.order);
-
-          // Trigger Client-Side Pixels (Redundant safety)
-          if (typeof window !== 'undefined') {
-            const fbq = (window as any).fbq;
-            const ttq = (window as any).ttq;
-
-            if (fbq) {
-              fbq('track', 'Purchase', {
-                value: result.order.amount,
-                currency: 'GBP',
-                order_id: result.order.id
-              });
-            }
-
-            if (ttq) {
-              ttq.track('CompletePayment', {
-                content_type: 'product',
-                value: result.order.amount,
-                currency: 'GBP',
-                contents: [{
-                  id: result.order.id,
-                  name: 'North Mind Order',
-                  quantity: 1,
-                  price: result.order.amount
-                }]
-              });
-            }
+            // UTMify (BRL converted)
+            trackUtmfyPurchase({
+              id: paymentIntentId as string,
+              amountInBRL: response.data.amountInBRL || 0
+            });
           }
         }
+
+        // --- 2. ORDER VERIFICATION (PASSWORD FORM) ---
+        if (orderId && userId) {
+          const res = await fetch(`${API_URL}/api/admin/verify-order/${orderId}/${userId}`);
+          if (res.ok) {
+            const userData = await res.json();
+            setEmail(userData.email);
+            setHasPassword(userData.hasPassword);
+          }
+        }
+
       } catch (error) {
-        console.error('Error processing tracking:', error);
+        console.error('❌ SUCCESS_PAGE_ERROR:', error);
       } finally {
         setLoading(false);
       }
     }
 
     processTracking();
-  }, [paymentIntentId]);
+  }, [paymentIntentId, searchParams]);
 
   return (
     <div className="success-container">
@@ -78,21 +98,31 @@ function SuccessContent() {
           <p className="success-message">Verifying order details...</p>
         ) : (
           <>
+            <div className="status-badge">Payment Successful</div>
             <p className="success-message">
-              Thank you for your purchase! Your order has been processed successfully.
-              {orderDetails && (
-                <span className="block mt-2 font-bold text-black/80">
-                  Total: £{orderDetails.amount.toFixed(2)}
-                </span>
-              )}
+              Your order has been confirmed. A confirmation email with your receipt and tracking details has been sent to <strong className="text-black">{email || 'your email'}</strong>.
             </p>
 
+            {/* Password Set or Dashboard Access */}
+            {!hasPassword ? (
+              <div className="login-context-card !bg-transparent !p-0">
+                <SetPasswordForm userId={userId!} orderId={orderId!} email={email} />
+              </div>
+            ) : (
+              <div className="login-context-card">
+                 <h3 className="context-title">Track Your Heritage</h3>
+                 <p className="context-text">
+                   To follow your order status, manage delivery details and access exclusive support, please ensure you are logged into your account.
+                 </p>
+                 <Link href="/user" className="login-action-btn">
+                   Access My Dashboard
+                 </Link>
+              </div>
+            )}
+
             <div className="actions-container">
-                <Link href="/user" className="px-8 py-4 bg-white text-black text-[10px] font-black uppercase tracking-widest rounded-xl hover:bg-gold transition-colors">
-                  Access Order Dashboard
-                </Link>
               <a href="/" className="back-link-secondary">
-                Return to Homepage
+                Continue Shopping
               </a>
             </div>
           </>
@@ -134,23 +164,60 @@ function SuccessContent() {
           font-size: 28px;
           font-weight: 800;
           color: #111827;
-          margin-bottom: 16px;
+          margin-bottom: 8px;
           text-transform: uppercase;
           letter-spacing: -0.02em;
         }
 
+        .status-badge {
+          display: inline-block;
+          background-color: #f0fdf4;
+          color: #16a34a;
+          font-[10px] font-black uppercase tracking-widest px-3 py-1 rounded-full mb-6 border border-green-100;
+        }
+
         .success-message {
-          font-size: 16px;
+          font-size: 14px;
           color: #4b5563;
-          margin-bottom: 32px;
+          margin-bottom: 24px;
           line-height: 1.6;
+        }
+
+        .login-context-card {
+          background-color: #000000;
+          border-radius: 16px;
+          padding: 24px;
+          margin-bottom: 32px;
+          text-align: left;
+          box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .context-title {
+           font-size: 10px;
+           font-black uppercase tracking-widest text-[#c5a358] mb-3;
+        }
+
+        .context-text {
+           font-size: 12px;
+           color: #ffffff;
+           opacity: 0.8;
+           line-height: 1.6;
+           margin-bottom: 20px;
+        }
+
+        .login-action-btn {
+           display: block;
+           width: 100%;
+           background-color: #ffffff;
+           color: #000000;
+           font-[10px] font-black uppercase tracking-widest py-4 rounded-xl text-center hover:bg-[#c5a358] hover:text-white transition-all;
         }
 
         .actions-container {
           display: flex;
           flex-direction: column;
           gap: 12px;
-          margin-bottom: 24px;
+          margin-bottom: 12px;
         }
 
         .login-offer-btn {

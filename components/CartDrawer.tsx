@@ -1,6 +1,7 @@
 "use client";
 
 import { useCart } from "@/lib/CartContext";
+import { trackBeginCheckout } from "@/lib/tracking";
 
 import { X, Minus, Plus, ShoppingBag, Lock, CheckCircle } from "lucide-react";
 import Link from "next/link";
@@ -102,7 +103,7 @@ function CartDrawerInner() {
                   key={`${item.id}-${item.selectedSize}`}
                   className="flex gap-6 group"
                 >
-                  <div className="relative h-28 w-24 flex-shrink-0 bg-card premium-border overflow-hidden">
+                  <div className="relative h-28 w-24 flex-shrink-0 bg-white/90 premium-border overflow-hidden">
                     <img
                       src={item.images[0]}
                       alt={item.title}
@@ -171,7 +172,10 @@ function CartDrawerInner() {
             <div className="w-full text-center">
               <Link
                 href="/checkout"
-                onClick={() => setIsDrawerOpen(false)}
+                onClick={() => {
+                  trackBeginCheckout(cart, totalPrice);
+                  setIsDrawerOpen(false);
+                }}
                 className="btn-premium text-base flex items-center justify-center gap-3 w-full text-center"
               >
                 <Lock size={18} />

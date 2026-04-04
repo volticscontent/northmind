@@ -27,7 +27,7 @@ export default async function Home() {
   );
 
   return (
-    <main className="min-h-screen bg-black">
+    <main className="min-h-screen bg-black" suppressHydrationWarning>
       <Header />
       <Hero />
       <ScrollingText />
@@ -40,10 +40,10 @@ export default async function Home() {
               collection={c.name}
               products={c.products}
             />
-            {/* Insert VideoSection between first and second carousel for dynamic flow */}
-            {index === 0 && <VideoSection collections={collections} />}
           </div>
         ))}
+
+        <VideoSection collections={collections} />
 
         {/* If no collections found, show a fallback space */}
         {collectionsWithProducts.length === 0 && (

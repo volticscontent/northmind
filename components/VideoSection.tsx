@@ -4,7 +4,7 @@ import { useCallback } from "react";
 import dynamic from "next/dynamic";
 import { useIsMobile } from "../lib/hooks";
 import { useRouter } from "next/navigation";
-import { ResponsiveVideo } from "./ResponsiveVideo";
+import { FrameSequence } from "./FrameSequence";
 
 // Dynamically import CircularGallery to avoid SSR issues with OGL
 const CircularGallery = dynamic(() => import("./effects/mobile/CircularGallery"), {
@@ -17,7 +17,6 @@ interface VideoSectionProps {
     name: string;
     handle: string;
     image?: string;
-    description?: string;
   }[];
 }
 
@@ -38,18 +37,36 @@ export function VideoSection({ collections = [] }: VideoSectionProps) {
   }, [router]);
 
   return (
-    <section className="relative w-full h-[60vh] md:h-screen overflow-hidden bg-black flex items-center justify-center">
-      {/* Background Video - mobile gets compressed version */}
-      <ResponsiveVideo
-        desktopSrc="/assets/video_section.mp4"
-        mobileSrc="/assets/video_section-mobile.mp4"
-        poster="/assets/video_section-poster.jpg"
-        className="absolute inset-0 w-full h-full object-cover opacity-30 grayscale contrast-125 z-0"
-      />
+    <section className="relative w-full h-[80vh] md:h-screen overflow-hidden bg-black">
+      {/* Background Frame Sequence - PURE BACKGROUND LAYER */}
+      <div className="absolute inset-0 z-0">
+        <FrameSequence
+          key={isMobile ? "mobile" : "desktop"}
+          basePath={isMobile ? "/assets/video-section-frames/mobile" : "/assets/video-section-frames/desktop"}
+          frameCount={381}
+          fps={20}
+          poster="/assets/video_section-poster.jpg"
+          className="h-full w-full object-cover opacity-55 grayscale contrast-125"
+        />
+        {/* Gradient Overlays inside background layer */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-black z-10" />
+      </div>
 
-      {/* Interactive Gallery Layer */}
-      <div className="relative z-20 w-full h-full flex flex-col items-center justify-center">
-        <div className="w-full h-[300px] md:h-[600px]">
+      {/* Content Layer - Floating over background */}
+      <div className="absolute inset-0 z-20 flex flex-col items-center justify-center pt-24 pb-12">
+        {/* Header Title - Project Typography Applied */}
+        <div className="text-center px-6 mb-12 font-plus-jakarta-sans">
+          <h2 className="text-2xl md:text-5xl font-black uppercase tracking-tighter text-white mb-2 drop-shadow-2xl">
+            HERITAGE COLLECTIONS
+          </h2>
+          <div className="w-12 h-[1px] bg-accent/40 mx-auto mb-3" />
+          <p className="text-[9px] md:text-xs uppercase tracking-[0.4em] text-white/50 font-bold font-sans">
+            Masterfully Crafted Editions
+          </p>
+        </div>
+
+        {/* Interactive Gallery - Centered with proper height padding */}
+        <div className="w-full h-[450px] md:h-[650px] relative">
           <CircularGallery
             items={galleryItems.length > 0 ? galleryItems : undefined}
             onItemClick={handleItemClick}
@@ -59,18 +76,13 @@ export function VideoSection({ collections = [] }: VideoSectionProps) {
           />
         </div>
 
-        <div className="absolute bottom-8 md:bottom-12 left-0 right-0 text-center px-6 pointer-events-none">
-          <h2 className="text-xl md:text-3xl font-black uppercase tracking-tighter text-white mb-2 drop-shadow-lg">
-            HERITAGE COLLECTIONS
-          </h2>
-          <p className="text-[10px] md:text-xs uppercase tracking-[0.3em] text-white/70">
+        {/* Scroll Indicator */}
+        <div className="mt-8 text-center px-6 opacity-50">
+          <p className="text-[8px] md:text-[10px] uppercase tracking-[0.3em] text-white/80 font-sans">
             {isMobile ? "Drag to explore" : "Scroll or Drag to explore"}
           </p>
         </div>
       </div>
-
-      {/* Gradient Overlays */}
-      <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-black z-10" />
     </section>
   );
 }

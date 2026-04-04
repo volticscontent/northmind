@@ -484,8 +484,8 @@ class App {
 
   createGeometry() {
     this.planeGeometry = new Plane(this.gl, {
-      heightSegments: 50,
-      widthSegments: 100
+      heightSegments: 20,
+      widthSegments: 40
     });
   }
 
@@ -731,7 +731,7 @@ export default function CircularGallery({
   bend = 3,
   textColor = '#ffffff',
   borderRadius = 0.01,
-  font = 'bold 300px Montserrat',
+  font = '900 200px Plus Jakarta Sans, sans-serif',
   scrollSpeed = 2,
   scrollEase = 0.05,
   onItemClick
