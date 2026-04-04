@@ -95,6 +95,7 @@ export default function CheckoutForm({ items, clientSecret }: CheckoutFormProps)
     if (icTriggered.current || !email || !phone || !firstName) return;
     
     icTriggered.current = true;
+    if (email) localStorage.setItem('nm_customer_email', email);
     const utmifyId = localStorage.getItem('utmify_id') || localStorage.getItem('success-id');
     const utmSource = localStorage.getItem('utm_source');
 

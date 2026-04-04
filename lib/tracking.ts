@@ -11,11 +11,72 @@ interface Product {
 
 const GBP_TO_BRL = 7.4;
 
+const getCustomerData = () => {
+  if (typeof window === 'undefined') return {};
+  const email = localStorage.getItem('nm_customer_email');
+  return email ? { email } : {};
+};
+
+export const trackViewProduct = (product: Product) => {
+  if (typeof window === 'undefined') return;
+
+  const fbq = (window as any).fbq;
+  const ttq = (window as any).ttq;
+  const utmHelper = (window as any).utmHelper;
+
+  console.group('👀 Tracking: ViewProduct');
+  console.log('Product:', product.title, '| Price:', product.price);
+
+  // Meta Pixel
+  if (fbq) {
+    fbq('track', 'ViewContent', {
+      content_ids: [product.id],
+      content_name: product.title,
+      content_type: 'product',
+      value: Number(product.price.toFixed(2)),
+      currency: 'GBP',
+    });
+  }
+
+  // TikTok Pixel
+  if (ttq) {
+    ttq.track('ViewContent', {
+      contents: [{
+        id: product.id,
+        name: product.title,
+        quantity: 1,
+        price: Number(product.price.toFixed(2)),
+      }],
+      content_type: 'product',
+      value: Number(product.price.toFixed(2)),
+      currency: 'GBP',
+    });
+  }
+
+  // UTMify
+  if (utmHelper && typeof utmHelper.send === 'function') {
+    utmHelper.send('view_item', {
+      ...getCustomerData(),
+      totalPriceInCents: Math.round(product.price * 100 * GBP_TO_BRL),
+      products: [{
+        id: product.id,
+        name: product.title,
+        priceInCents: Math.round(product.price * 100 * GBP_TO_BRL),
+        quantity: 1
+      }]
+    });
+    console.log('✅ UTMify Manual Event Sent: view_item (Converted 7.4x)');
+  }
+
+  console.groupEnd();
+};
+
 export const trackAddToCart = (product: Product, quantity: number = 1) => {
   if (typeof window === 'undefined') return;
 
   const fbq = (window as any).fbq;
   const ttq = (window as any).ttq;
+  const utmHelper = (window as any).utmHelper;
 
   console.group('🛒 Tracking: AddToCart');
   console.log('Product:', product.title, '| Price:', product.price);
@@ -46,6 +107,21 @@ export const trackAddToCart = (product: Product, quantity: number = 1) => {
     });
   }
 
+  // UTMify
+  if (utmHelper && typeof utmHelper.send === 'function') {
+    utmHelper.send('add_to_cart', {
+      ...getCustomerData(),
+      totalPriceInCents: Math.round(product.price * quantity * 100 * GBP_TO_BRL),
+      products: [{
+        id: product.id,
+        name: product.title,
+        priceInCents: Math.round(product.price * 100 * GBP_TO_BRL),
+        quantity: quantity
+      }]
+    });
+    console.log('✅ UTMify Manual Event Sent: add_to_cart (Converted 7.4x)');
+  }
+
   console.groupEnd();
 };
 
@@ -54,6 +130,7 @@ export const trackBeginCheckout = (cart: Product[], totalPrice: number) => {
 
   const fbq = (window as any).fbq;
   const ttq = (window as any).ttq;
+  const utmHelper = (window as any).utmHelper;
 
   console.group('💳 Tracking: InitiateCheckout');
   console.log('Total:', totalPrice, '| Items:', cart.length);
@@ -82,6 +159,21 @@ export const trackBeginCheckout = (cart: Product[], totalPrice: number) => {
       value: Number(totalPrice.toFixed(2)),
       currency: 'GBP',
     });
+  }
+
+  // UTMify
+  if (utmHelper && typeof utmHelper.send === 'function') {
+    utmHelper.send('initiate_checkout', {
+      ...getCustomerData(),
+      totalPriceInCents: Math.round(totalPrice * 100 * GBP_TO_BRL),
+      products: cart.map(item => ({
+        id: item.id,
+        name: item.title,
+        priceInCents: Math.round(item.price * 100 * GBP_TO_BRL),
+        quantity: item.quantity ?? 1
+      }))
+    });
+    console.log('✅ UTMify Manual Event Sent: initiate_checkout (Converted 7.4x)');
   }
 
   console.groupEnd();

@@ -1,6 +1,7 @@
 import { Product } from "@/lib/data-loader";
 import Link from "next/link";
 import Image from "next/image";
+import { useEffect } from "react";
 import { Star, ShieldCheck, CheckCircle2, Package, Truck, Info } from "lucide-react";
 import { ProductCard } from "./ProductCard";
 import { ProductFaqBox } from "./product/ProductFaqBox";
@@ -9,6 +10,8 @@ import { ProductReviews } from "./product/ProductReviews";
 import { ProductGallery } from "./product/ProductGallery";
 import { ProductAccordion } from "./product/ProductAccordion";
 import { LifestyleStories } from "./product/LifestyleStories";
+import { trackViewProduct } from "@/lib/tracking";
+
 interface ProductDetailProps {
   product: Product;
   allProducts: Product[];
@@ -16,6 +19,16 @@ interface ProductDetailProps {
 }
 
 export function ProductDetail({ product, allProducts, searchParams }: ProductDetailProps) {
+  useEffect(() => {
+    if (product) {
+      trackViewProduct({
+        id: product.id,
+        title: product.title,
+        price: Number(product.price)
+      });
+    }
+  }, [product]);
+
   const safePrice = Number(product?.price) || 0;
   const safeOriginalPrice = Number(product?.originalPrice) || 0;
   const discount = safeOriginalPrice > safePrice
