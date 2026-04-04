@@ -22,11 +22,32 @@ export function Footer() {
 
         <div>
           <h4 className="text-white text-xs uppercase font-bold tracking-widest mb-6">Customer Care</h4>
-          <ul className="space-y-4 text-sm">
-            <li><Link href="/faq" className="hover:text-gold transition-colors">FAQ</Link></li>
-            <li><Link href="/shipping" className="hover:text-gold transition-colors">Shipping Policy</Link></li>
-            <li><Link href="#" className="hover:text-gold transition-colors">Returns & Refunds</Link></li>
-            <li><Link href="#" className="hover:text-gold transition-colors">Warranty Policy</Link></li>
+          <ul className="space-y-4">
+            <li>
+              <Link href="/user" className="text-sm text-white/40 hover:text-accent transition-colors uppercase tracking-widest text-[10px] font-bold">
+                Member Area
+              </Link>
+            </li>
+            <li>
+              <Link href="/privacy" className="text-sm text-white/40 hover:text-accent transition-colors uppercase tracking-widest text-[10px] font-bold">
+                Privacy Policy
+              </Link>
+            </li>
+            <li>
+              <Link href="/refund" className="text-sm text-white/40 hover:text-accent transition-colors uppercase tracking-widest text-[10px] font-bold">
+                Returns & Refund
+              </Link>
+            </li>
+            <li>
+              <Link href="/data-deletion" className="text-sm text-white/40 hover:text-accent transition-colors uppercase tracking-widest text-[10px] font-bold">
+                Data Erasure
+              </Link>
+            </li>
+            <li>
+              <Link href="/shipping" className="text-sm text-white/40 hover:text-accent transition-colors uppercase tracking-widest text-[10px] font-bold">
+                Shipping Info
+              </Link>
+            </li>
           </ul>
         </div>
 

@@ -12,8 +12,9 @@ import {
   LogOut
 } from "lucide-react";
 import Link from "next/link";
-import { ProfileCard } from "@/components/customer/ProfileCard";
-import { OrderCard } from "@/components/customer/OrderCard";
+import { ProfileCard } from "@/components/user/ProfileCard";
+import { OrderCard } from "@/components/user/OrderCard";
+import { ArrowRight, ShieldCheck, Mail, Trash2, RotateCcw } from "lucide-react";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
 
@@ -142,7 +143,7 @@ export default async function DashboardPage() {
                 </div>
                 <h3 className="text-lg font-light text-white/60 mb-2">No orders yet</h3>
                 <p className="text-sm text-white/30 max-w-[240px] mb-8 font-light">Your journey with North Mind starts with your first unique piece.</p>
-                <Link href="/collections/jackets" className="px-8 py-4 bg-white text-black text-[10px] font-black uppercase tracking-widest rounded-xl hover:bg-accent transition-colors">
+                <Link href="/" className="px-8 py-4 bg-white text-black text-[10px] font-black uppercase tracking-widest rounded-xl hover:bg-accent transition-colors">
                   Explore Collections
                 </Link>
               </div>
@@ -153,28 +154,59 @@ export default async function DashboardPage() {
                 ))}
               </div>
             )}
+
+            {/* Account & Safety Section (Sober Design) */}
+            <div className="mt-16 pt-12 border-t border-white/5">
+              <h3 className="text-[10px] uppercase font-black tracking-[0.3em] text-white/20 mb-8 px-2">Support & Safety</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <Link href="/refund" className="flex items-center justify-between p-6 rounded-2xl bg-white/[0.02] border border-white/5 hover:border-white/20 transition-all group">
+                  <div className="flex items-center gap-4">
+                    <RotateCcw size={18} className="text-white/40 group-hover:text-accent transition-colors" />
+                    <div>
+                      <p className="text-xs font-bold uppercase tracking-widest">Return & Refund</p>
+                      <p className="text-[10px] text-white/30 uppercase mt-1">14-day heritage guarantee</p>
+                    </div>
+                  </div>
+                  <ArrowRight size={14} className="text-white/10 group-hover:text-white transition-all" />
+                </Link>
+
+                <Link href="/privacy" className="flex items-center justify-between p-6 rounded-2xl bg-white/[0.02] border border-white/5 hover:border-white/20 transition-all group">
+                  <div className="flex items-center gap-4">
+                    <ShieldCheck size={18} className="text-white/40 group-hover:text-accent transition-colors" />
+                    <div>
+                      <p className="text-xs font-bold uppercase tracking-widest">Privacy Policy</p>
+                      <p className="text-[10px] text-white/30 uppercase mt-1">UK GDPR Compliant</p>
+                    </div>
+                  </div>
+                  <ArrowRight size={14} className="text-white/10 group-hover:text-white transition-all" />
+                </Link>
+
+                <Link href="/data-deletion" className="flex items-center justify-between p-6 rounded-2xl bg-white/[0.02] border border-white/5 hover:border-white/20 transition-all group">
+                  <div className="flex items-center gap-4">
+                    <Trash2 size={18} className="text-white/40 group-hover:text-rose-500/50 transition-colors" />
+                    <div>
+                      <p className="text-xs font-bold uppercase tracking-widest">Account Deletion</p>
+                      <p className="text-[10px] text-white/30 uppercase mt-1">Right to be forgotten</p>
+                    </div>
+                  </div>
+                  <ArrowRight size={14} className="text-white/10 group-hover:text-white transition-all" />
+                </Link>
+
+                <Link href="mailto:support@northmind.uk" className="flex items-center justify-between p-6 rounded-2xl bg-white/[0.02] border border-white/5 hover:border-white/20 transition-all group">
+                  <div className="flex items-center gap-4">
+                    <Mail size={18} className="text-white/40 group-hover:text-accent transition-colors" />
+                    <div>
+                      <p className="text-xs font-bold uppercase tracking-widest">Support</p>
+                      <p className="text-[10px] text-white/30 uppercase mt-1">contact us 24/7</p>
+                    </div>
+                  </div>
+                  <ArrowRight size={14} className="text-white/10 group-hover:text-white transition-all" />
+                </Link>
+              </div>
+            </div>
           </div>
         </div>
       </main>
     </div>
-  );
-}
-
-function ArrowRight({ className, size }: { className?: string, size?: number }) {
-  return (
-    <svg
-      className={className}
-      width={size || 24}
-      height={size || 24}
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <path d="M5 12h14" />
-      <path d="m12 5 7 7-7 7" />
-    </svg>
   );
 }

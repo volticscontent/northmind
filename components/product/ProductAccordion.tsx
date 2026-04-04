@@ -60,7 +60,7 @@ export function ProductAccordion({ items }: ProductAccordionProps) {
                   exit={{ height: 0, opacity: 0 }}
                   transition={{ duration: 0.5, ease: [0.23, 1, 0.32, 1] }}
                 >
-                  <div className="px-6 py-8 bg-white/5 border-t border-white">
+                  <div className="px-6 py-8 bg-white/5 border-t border-white/10">
                     <div className="text-sm md:text-base leading-relaxed text-white/80 font-medium">
                       {item.content}
                     </div>

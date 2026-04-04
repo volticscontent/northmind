@@ -48,8 +48,8 @@ export default function CheckoutForm({ items }: CheckoutFormProps) {
   const [address, setAddress] = useState("");
   const [complement, setComplement] = useState("");
   const [city, setCity] = useState("");
-  const [cep, setCep] = useState("");
-  const [stateUF, setStateUF] = useState("");
+  const [postcode, setPostcode] = useState("");
+  const [county, setCounty] = useState("");
   const [saveInfo, setSaveInfo] = useState(false);
 
   // Auto-fill form if session exists
@@ -88,26 +88,6 @@ export default function CheckoutForm({ items }: CheckoutFormProps) {
     }).format(value);
   };
 
-  // Busca do ViaCEP
-  const handleCepBlur = async () => {
-    const cleanCep = cep.replace(/\D/g, "");
-    if (cleanCep.length === 8) {
-      try {
-        const response = await fetch(
-          `https://viacep.com.br/ws/${cleanCep}/json/`,
-        );
-        const data = await response.json();
-        if (!data.erro) {
-          setAddress(data.logradouro || "");
-          setCity(data.localidade || "");
-          setStateUF(data.uf || "");
-        }
-      } catch (error) {
-        console.error("Erro ao buscar CEP:", error);
-      }
-    }
-  };
-
   // Tratamento da submissão manual do Checkout (Div simulando formulário)
   const handleSubmit = async () => {
     if (!stripe || !elements) {
@@ -131,9 +111,9 @@ export default function CheckoutForm({ items }: CheckoutFormProps) {
           lastName,
           address,
           city,
-          cep,
+          postcode,
           country,
-          stateUF,
+          county,
           complement
         }
       });
@@ -162,8 +142,8 @@ export default function CheckoutForm({ items }: CheckoutFormProps) {
                 line1: address,
                 line2: complement || undefined,
                 city: city,
-                state: stateUF,
-                postal_code: cep,
+                state: county,
+                postal_code: postcode,
                 country: country,
               },
             },
@@ -287,7 +267,6 @@ export default function CheckoutForm({ items }: CheckoutFormProps) {
               onChange={(e) => setCountry(e.target.value)}
             >
               <option value="UK">United Kingdom</option>
-              {/* Adicionar mais se necessário */}
             </select>
           </div>
 
@@ -295,7 +274,7 @@ export default function CheckoutForm({ items }: CheckoutFormProps) {
             <input
               type="text"
               className="input-field"
-              placeholder="Nome"
+              placeholder="First name"
               value={firstName}
               onChange={(e) => setFirstName(e.target.value)}
               required
@@ -303,7 +282,7 @@ export default function CheckoutForm({ items }: CheckoutFormProps) {
             <input
               type="text"
               className="input-field"
-              placeholder="Sobrenome"
+              placeholder="Last name"
               value={lastName}
               onChange={(e) => setLastName(e.target.value)}
               required
@@ -314,7 +293,7 @@ export default function CheckoutForm({ items }: CheckoutFormProps) {
             <input
               type="text"
               className="input-field"
-              placeholder="Endereço"
+              placeholder="Address"
               value={address}
               onChange={(e) => setAddress(e.target.value)}
               required
@@ -326,7 +305,7 @@ export default function CheckoutForm({ items }: CheckoutFormProps) {
             <input
               type="text"
               className="input-field"
-              placeholder="Número / Complemento (opcional)"
+              placeholder="Apartment, suite, etc. (optional)"
               value={complement}
               onChange={(e) => setComplement(e.target.value)}
             />
@@ -336,19 +315,28 @@ export default function CheckoutForm({ items }: CheckoutFormProps) {
             <input
               type="text"
               className="input-field"
-              placeholder="CEP"
-              value={cep}
-              onChange={(e) => setCep(e.target.value)}
-              onBlur={handleCepBlur}
+              placeholder="Postcode"
+              value={postcode}
+              onChange={(e) => setPostcode(e.target.value)}
               required
             />
             <input
               type="text"
               className="input-field"
-              placeholder="Cidade"
+              placeholder="City"
               value={city}
               onChange={(e) => setCity(e.target.value)}
               required
+            />
+          </div>
+
+          <div className="input-group">
+            <input
+              type="text"
+              className="input-field"
+              placeholder="County (optional)"
+              value={county}
+              onChange={(e) => setCounty(e.target.value)}
             />
           </div>
 
@@ -360,7 +348,7 @@ export default function CheckoutForm({ items }: CheckoutFormProps) {
               onChange={(e) => setSaveInfo(e.target.checked)}
             />
             <label htmlFor="save-info">
-              Salvar informações para a próxima vez
+              Save this information for next time
             </label>
           </div>
 
@@ -369,7 +357,7 @@ export default function CheckoutForm({ items }: CheckoutFormProps) {
           </div>
           <div className="shipping-card selected">
             <div className="shipping-left">
-              <span className="shipping-method">Frete Grátis</span>
+              <span className="shipping-method">Free Shipping</span>
             </div>
             <span className="shipping-price">FREE</span>
           </div>
@@ -378,7 +366,7 @@ export default function CheckoutForm({ items }: CheckoutFormProps) {
             <h2 className="section-title ">Payment</h2>
             <div className="secure-text">
               <Lock size={12} className="secure-icon" />
-              <span>Todas as transações são seguras e criptografadas.</span>
+              <span>All transactions are secure and encrypted.</span>
             </div>
           </div>
 
@@ -386,13 +374,9 @@ export default function CheckoutForm({ items }: CheckoutFormProps) {
             {/* PaymentElement - Stripe Tabs Layout configurado no Componente Pai */}
             <PaymentElement
               options={{
-                paymentMethodOrder: ["pix", "card", "boleto"],
+                paymentMethodOrder: ["apple_pay", "google_pay", "card"],
                 fields: {
                   billingDetails: { name: "never", email: "never" },
-                },
-                wallets: {
-                  applePay: "never",
-                  googlePay: "never",
                 },
               }}
             />
@@ -410,7 +394,7 @@ export default function CheckoutForm({ items }: CheckoutFormProps) {
                 <span className="spinner"></span>
               ) : (
                 <>
-                  <span>Finalizar pedido</span>
+                  <span>Pay now</span>
                   <span>{formatCurrency(total)}</span>
                 </>
               )}
@@ -418,10 +402,10 @@ export default function CheckoutForm({ items }: CheckoutFormProps) {
           </div>
 
           <div className="footer-links">
-            <a href="#">Política de reembolso</a>
-            <a href="#">Política de frete</a>
-            <a href="#">Política de privacidade</a>
-            <a href="#">Termos de serviço</a>
+            <a href="#">Refund policy</a>
+            <a href="#">Shipping policy</a>
+            <a href="#">Privacy policy</a>
+            <a href="#">Terms of service</a>
           </div>
         </div>
       </div>
@@ -466,12 +450,12 @@ export default function CheckoutForm({ items }: CheckoutFormProps) {
               <span className="total-value">{formatCurrency(subtotal)}</span>
             </div>
             <div className="total-row">
-              <span className="total-label">Frete</span>
-              <span className="total-value green">GRÁTIS</span>
+              <span className="total-label">Shipping</span>
+              <span className="total-value green">FREE</span>
             </div>
             {totalDiscounts > 0 && (
               <div className="total-row">
-                <span className="total-label">Economia total</span>
+                <span className="total-label">Total savings</span>
                 <span className="total-value savings-value">
                   {formatCurrency(totalDiscounts)}
                 </span>
@@ -830,34 +814,6 @@ export default function CheckoutForm({ items }: CheckoutFormProps) {
           text-decoration: line-through;
           color: #f87171;
           font-size: 12px;
-        }
-
-        .discount-section {
-          display: flex;
-          gap: 12px;
-          margin-bottom: 24px;
-          padding-top: 24px;
-          border-top: 1px solid white;
-        }
-
-        .coupon-input {
-          flex: 1;
-        }
-
-        .apply-btn {
-          background-color: #e5e7eb;
-          color: #9ca3af;
-          border: 1px solid #d1d5db;
-          border-radius: 6px;
-          padding: 0 16px;
-          font-size: 14px;
-          font-weight: 600;
-          cursor: not-allowed;
-          transition: background-color 0.2s;
-        }
-
-        .apply-btn:hover {
-          /* Permitir visual de disabled / ou ativar caso tenha lógica */
         }
 
         .totals-section {

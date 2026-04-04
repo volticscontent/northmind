@@ -18,6 +18,23 @@ export function ProductInteractions({ product, allProducts = [] }: ProductIntera
   const { addToCart, setIsDrawerOpen } = useCart();
   const router = useRouter();
 
+  const [selectedBundle, setSelectedBundle] = useState("single");
+  const [isAdding, setIsAdding] = useState(false);
+  const [isSizeGuideOpen, setIsSizeGuideOpen] = useState(false);
+  const [isPickerOpen, setIsPickerOpen] = useState(false);
+  const [activeSlotIdx, setActiveSlotIdx] = useState<number | null>(null);
+
+  const isFragrance = product.tipo === "PERFUME" || product.collection?.toLowerCase().includes("fragrance") || product.collection?.toLowerCase().includes("3x1");
+
+  // Force 100ml for all fragrances (individual or sets)
+  const sizes = isFragrance
+    ? ["100ml"]
+    : (product.opcoesTamanho && product.opcoesTamanho.length > 0
+      ? product.opcoesTamanho
+      : ["S", "M", "L", "XL", "XXL"]);
+
+  const isSet = selectedBundle !== "single" && isFragrance;
+
   const safeImage = product?.images?.[0] || "/assets/community/1.png";
 
   const colors = (product as any).opcoesCor && (product as any).opcoesCor.length > 0
@@ -27,9 +44,6 @@ export function ProductInteractions({ product, allProducts = [] }: ProductIntera
     }))
     : [];
 
-  const isFragrance = product.tipo === "PERFUME" || product.collection?.toLowerCase().includes("fragrance") || product.collection?.toLowerCase().includes("3x1");
-  const sizes = product.opcoesTamanho && product.opcoesTamanho.length > 0 ? product.opcoesTamanho : (isFragrance ? ["30ml", "50ml", "100ml"] : ["S", "M", "L", "XL", "XXL"]);
-
   const collectionProducts = allProducts.filter(p => p.collection === product.collection);
 
   const [bundleSelections, setBundleSelections] = useState([
@@ -38,11 +52,12 @@ export function ProductInteractions({ product, allProducts = [] }: ProductIntera
     { productId: product.id, color: colors[0]?.name || "", size: sizes[0] }
   ]);
 
-  const [selectedBundle, setSelectedBundle] = useState("single");
-  const [isAdding, setIsAdding] = useState(false);
-  const [isSizeGuideOpen, setIsSizeGuideOpen] = useState(false);
-  const [isPickerOpen, setIsPickerOpen] = useState(false);
-  const [activeSlotIdx, setActiveSlotIdx] = useState<number | null>(null);
+  // Reset sizes to 100ml for Fragrance sets
+  useEffect(() => {
+    if (isSet) {
+      setBundleSelections(prev => prev.map(s => ({ ...s, size: "100ml" })));
+    }
+  }, [isSet]);
 
   // Global selections (applies to "SINGLE" or serves as base for Duo/Trio)
   const selectedSize = bundleSelections[0].size;
@@ -176,12 +191,12 @@ export function ProductInteractions({ product, allProducts = [] }: ProductIntera
                 className="relative group flex items-center justify-center size-20"
               >
                 <div
-                  className={`absolute inset-0 border-[3px] rounded-full transition-all duration-500 group-hover:scale-105 ${selectedColor === color.name
-                    ? "border-yellow-500"
+                  className={`absolute inset-0 border-[2px] rounded-lg transition-all duration-500 group-hover:scale-105 ${selectedColor === color.name
+                    ? "border-yellow-300"
                     : "border-white/10 opacity-0 group-hover:opacity-100"
                     }`}
                 />
-                <div className="size-[100%] bg-[#F2F2F2] rounded-full overflow-hidden flex items-center justify-center p-1.5 transition-transform duration-500 group-hover:scale-105">
+                <div className="size-[100%] bg-[#F2F2F2] rounded-lg overflow-hidden flex items-center justify-center p-1.5 transition-transform duration-500 group-hover:scale-105">
                   <img
                     src={color.image}
                     alt={color.name}
@@ -421,8 +436,8 @@ export function ProductInteractions({ product, allProducts = [] }: ProductIntera
       {/* FRAGRANCE SELECTION VAULT MODAL */}
       {isPickerOpen && (
         <div className="fixed inset-0 z-[9999] flex items-center justify-center animate-in fade-in duration-300">
-          <div 
-            className="absolute inset-0 bg-black/95 backdrop-blur-2xl" 
+          <div
+            className="absolute inset-0 bg-black/95 backdrop-blur-2xl"
             onClick={() => setIsPickerOpen(false)}
           />
 
@@ -433,7 +448,7 @@ export function ProductInteractions({ product, allProducts = [] }: ProductIntera
                 <h2 className="text-2xl md:text-4xl font-black uppercase tracking-tighter text-white">Fragrance Selection Vault</h2>
                 <p className="text-[10px] md:text-xs font-bold uppercase tracking-widest text-accent italic">Select your next essence from the house of North Mind</p>
               </div>
-              <button 
+              <button
                 onClick={() => setIsPickerOpen(false)}
                 className="size-12 md:size-16 rounded-full border border-white/10 flex items-center justify-center text-white hover:bg-white hover:text-black transition-all"
               >
@@ -442,15 +457,15 @@ export function ProductInteractions({ product, allProducts = [] }: ProductIntera
             </div>
 
             {/* Modal Product Grid */}
-            <div className="flex-grow overflow-y-auto custom-scrollbar p-4 md:p-12">
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 md:gap-8">
+            <div className="flex-grow overflow-y-auto custom-scrollbar p-1 md:p-12">
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-1 md:gap-1">
                 {collectionProducts.map((p) => {
                   const isSelected = activeSlotIdx !== null && bundleSelections[activeSlotIdx].productId === p.id;
-                  
+
                   return (
                     <div key={p.id} className="relative group">
-                      <ProductCard 
-                        product={p} 
+                      <ProductCard
+                        product={p}
                         onClick={handleSelectFragrance}
                       />
                       {isSelected && (

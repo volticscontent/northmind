@@ -62,7 +62,7 @@ export function ProductGallery({ images, title, discount, opcoesCor, isFragrance
             alt={`${title} Principal`}
             fill
             priority
-            sizes="50vw"
+            sizes="100vw"
             className="object-cover transition-transform duration-1000 group-hover:scale-[1.03]"
           />
           {discount > 0 && (
@@ -74,11 +74,11 @@ export function ProductGallery({ images, title, discount, opcoesCor, isFragrance
       </div>
 
       {/* Visualização Mobile (Foto Principal + Carrossel) */}
-      <div className="flex md:hidden flex-col gap-2">
+      <div className="flex md:hidden flex-col gap-[1px]">
         {/* Foto Principal */}
         <div
           className="relative w-full premium-border bg-white overflow-hidden"
-          style={isFragrance ? { aspectRatio: '4/5' } : { aspectRatio: '4/5' }}
+          style={isFragrance ? { aspectRatio: '5/5' } : { aspectRatio: '4/5' }}
         >
           <Image
             src={safeImages[activeIndex]}
@@ -89,21 +89,21 @@ export function ProductGallery({ images, title, discount, opcoesCor, isFragrance
             className="object-cover"
           />
           {discount > 0 && (
-            <div className="absolute top-4 left-4 z-10 bg-black text-white text-[10px] font-black px-3 py-1 uppercase tracking-luxury">
+            <div className="absolute top-4 left-4 z-10 bg-accent border-l text-[10px] font-black px-3 py-1 uppercase tracking-luxury">
               -{discount}% EXCLUSIVE
             </div>
           )}
         </div>
 
         {/* Carrossel de Miniaturas */}
-        <div className="flex overflow-x-auto gap-2 pb-2 snap-x scrollbar-hide px-2" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
+        <div className="flex overflow-x-auto gap-[1px] pb-2 snap-x scrollbar-hide" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
           {safeImages.map((imgSrc, i) => (
             <button
               key={i}
               onClick={() => setActiveIndex(i)}
-              className={`relative w-20 aspect-[4/5] shrink-0 snap-start overflow-hidden transition-all ${i === activeIndex
-                ? "border border-white scale-100 opacity-100"
-                : "border border-white/60 opacity-60 hover:opacity-100"
+              className={`relative w-[35%] aspect-[5/5] shrink-0 snap-start overflow-hidden transition-all ${i === activeIndex
+                ? "border border-yellow-300 bg-white scale-100 opacity-100"
+                : "border border-white/60 bg-white opacity-60 hover:opacity-100"
                 }`}
             >
               <Image

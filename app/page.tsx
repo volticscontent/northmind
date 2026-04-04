@@ -6,6 +6,8 @@ import { Footer } from "@/components/Footer";
 import { VideoSection } from "@/components/VideoSection";
 import { getCollections, getProductsByCollection } from "@/lib/data-loader";
 
+export const dynamic = "force-dynamic";
+
 export default async function Home() {
   const collections = await getCollections();
 

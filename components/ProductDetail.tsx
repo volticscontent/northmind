@@ -32,7 +32,29 @@ export function ProductDetail({ product, allProducts, searchParams }: ProductDet
 
   return (
     <>
-      <div className="pt-16 md:pt-32 pb-24 max-w-[100%] md:max-w-[70%] mx-auto animate-fade-in">
+      <div className="pt-10 md:pt-32 pb-14 max-w-[100%] lg:max-w-[90%] md:max-w-[70%] mx-auto animate-fade-in">
+        <nav className="text-[10px] px-4 pt-10 uppercase font-bold tracking-luxury italic text-white/80 mb-6 flex items-center gap-3">
+          <Link href="/" className="hover:text-white transition-colors">
+            Home
+          </Link>
+          <span className="w-1 h-1 rounded-full bg-white/80" />
+          <span className="text-white">{product.collection}</span>
+        </nav>
+        <h1 className="text-3xl md:text-4xl font-black px-4 lg:px-0 md:px-0 uppercase tracking-tighter mb-2 leading-[0.9] text-white">
+          {product.title}
+        </h1>
+
+        <div className="flex items-center gap-4 mb-4 px-4 lg:px-0 md:px-0">
+          <div className="flex gap-1">
+            {[1, 2, 3, 4, 5].map((s) => (
+              <Star key={s} size={14} className={`${s <= (product.mediaAvaliacoes || 0) ? "fill-accent text-accent" : "text-white/20"}`} />
+            ))}
+          </div>
+          <span className="text-[10px] font-black uppercase tracking-widest text-white/40">
+            {product.mediaAvaliacoes?.toFixed(1) || "5.0"}/5 Premium Standard ({product.totalAvaliacoes || 0})
+          </span>
+        </div>
+
         <div className="grid grid-cols-1 md:grid-cols-2 gap-5 md:gap-20 items-start">
           {/* Product Images - STICKY on Desktop */}
           <div className="md:sticky md:top-28 self-start">
@@ -47,28 +69,6 @@ export function ProductDetail({ product, allProducts, searchParams }: ProductDet
 
           {/* Right Column - Content (Server Rendered) */}
           <div className="flex px-4 flex-col justify-center">
-            <nav className="text-[10px] uppercase font-bold tracking-luxury italic text-accent mb-6 flex items-center gap-3">
-              <Link href="/" className="hover:text-white transition-colors">
-                Home
-              </Link>
-              <span className="w-1 h-1 rounded-full bg-accent/30" />
-              <span className="text-white">{product.collection}</span>
-            </nav>
-
-            <h1 className="text-3xl md:text-4xl font-black uppercase tracking-tighter mb-2 leading-[0.9] text-white">
-              {product.title}
-            </h1>
-
-            <div className="flex items-center gap-4 mb-8">
-              <div className="flex gap-1">
-                {[1, 2, 3, 4, 5].map((s) => (
-                  <Star key={s} size={12} className={`${s <= (product.mediaAvaliacoes || 0) ? "fill-accent text-accent" : "text-white/10"}`} />
-                ))}
-              </div>
-              <span className="text-[10px] font-black uppercase tracking-widest text-white/40">
-                {product.mediaAvaliacoes?.toFixed(1) || "5.0"}/5 Premium Standard ({product.totalAvaliacoes || 0})
-              </span>
-            </div>
 
             <div className="flex items-baseline gap-4 mb-8">
               <span className="text-4xl font-black text-white tracking-tighter">
@@ -80,10 +80,6 @@ export function ProductDetail({ product, allProducts, searchParams }: ProductDet
                 </span>
               )}
             </div>
-
-            <p className="text-sm leading-relaxed text-white/50 mb-10 font-medium max-w-lg">
-              {product.description || "Crafted for the modern heritage aesthetic, this piece embodies the peak of British craftsmanship and durability."}
-            </p>
 
             {/* INTERACTIVE ISLAND: Variants, Bundles, Add to Cart */}
             <ProductInteractions product={product} allProducts={allProducts} />
@@ -107,14 +103,16 @@ export function ProductDetail({ product, allProducts, searchParams }: ProductDet
               </div>
 
               {/* Trust Card */}
-              <div className="bg-glow-card border border-white/90 rounded-xl p-5 space-y-4 transition-all duration-500 hover:border-[#C5A358]/30 group">
+              <div className="bg-glow-card border border-white/40 rounded-xl p-5 space-y-4 transition-all duration-500 hover:border-[#C5A358]/30 group">
                 <div className="flex gap-4">
-
                   <div className="space-y-1.5">
                     <h4 className="text-xs font-black uppercase tracking-luxury text-white">Authorized Premium Retailer</h4>
                     <p className="text-[10px] font-medium leading-relaxed text-white/80">Original inventory, guaranteed provenance, and responsive customer support.</p>
                   </div>
                 </div>
+                <p className="text-sm leading-relaxed text-white/90 mb-10 font-medium max-w-lg">
+                  {product.description || "Crafted for the modern heritage aesthetic, this piece embodies the peak of British craftsmanship and durability."}
+                </p>
                 <div className="flex items-center gap-3 bg-white/5 border border-[#C5A358]/10 rounded-lg p-3 transition-colors group-hover:bg-[#C5A358]/10">
                   <Package size={16} className="text-white" />
                   <p className="text-[9px] font-black uppercase tracking-widest text-white leading-none">Secure Purchase & Easy Returns</p>
@@ -220,7 +218,7 @@ export function ProductDetail({ product, allProducts, searchParams }: ProductDet
         </div>
       </div>
 
-      <div className="pt-32 space-y-12" style={{ overflowX: 'clip' }}>
+      <div className="space-y-12" style={{ overflowX: 'clip' }}>
 
         {/* North Mind Community - Static structure + marquee (Server Rendered) */}
         <section className="overflow-hidden px-4">
@@ -239,7 +237,7 @@ export function ProductDetail({ product, allProducts, searchParams }: ProductDet
               {[1, 2, 3, 4, 5, 1, 2, 3, 4, 5, 1, 2, 3, 4, 5, 1, 2, 3, 4, 5, 1, 2, 3, 4, 5, 1, 2, 3, 4, 5].map((imageNum, i) => (
                 <div
                   key={i}
-                  className="relative w-[300px] aspect-[10/14] rounded-3xl flex-shrink-0 shadow-[0_30px_60px_rgba(10,10,9,0.8)] border border-white/5 transition-transform duration-700 hover:scale-[1.05] overflow-hidden"
+                  className="relative w-[200px] md:w-[300px] aspect-[10/14] rounded-3xl flex-shrink-0 border border-white/90 transition-transform duration-700 hover:scale-[1.05] overflow-hidden"
                 >
                   <Image
                     src={`/assets/community/${imageNum}.png`}
@@ -256,7 +254,7 @@ export function ProductDetail({ product, allProducts, searchParams }: ProductDet
         </section>
 
         {/* Other Products Section (Server Rendered) */}
-        <section className="max-w-7xl mx-auto px-4 md:px-8 space-y-16 pb-24">
+        <section className="max-w-7xl mx-auto px-2 md:px-8 space-y-16 pb-12">
           <div className="text-center space-y-4">
             <h2 className="text-3xl md:text-5xl font-black uppercase tracking-tighter text-white">
               Heritage Collection
@@ -265,8 +263,8 @@ export function ProductDetail({ product, allProducts, searchParams }: ProductDet
               Explore more from the house of North Mind
             </p>
           </div>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 md:gap-10">
-            {allProducts.slice(0, 4).map((relatedProduct) => (
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-1 md:gap-1">
+            {allProducts.slice(0, 16).map((relatedProduct) => (
               <ProductCard key={relatedProduct.id} product={relatedProduct} />
             ))}
           </div>

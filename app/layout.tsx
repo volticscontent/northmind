@@ -71,9 +71,20 @@ export default function RootLayout({
         <Script id="tiktok-pixel" strategy="afterInteractive">
           {`
             !function (w, d, t) {
-              w.TTP = w.TTP || []; w.TTP.prepare = function (t, e) { w.TTP.push({ type: t, value: e }) };
-              var a = d.createElement('script'); a.async = !0, a.src = 'https://analytics.tiktok.com/i18n/pixel/events.js?sdkid=D4LDB1RC77UDM7TK2810';
-              var s = d.getElementsByTagName('script')[0]; s.parentNode.insertBefore(a, s)
+              w.ttq = w.ttq || [];
+              w.ttq.methods = ["page", "track", "identify", "instances", "debug", "on", "off", "once", "ready", "alias", "group", "setAlias", "setGroup", "identifyUser", "addPaymentInfo", "addContent", "addToCart", "addToWishlist", "beginCheckout", "subscribe", "completeRegistration", "purchase"];
+              w.ttq.setAndDefer = function(t, e) { t[e] = function() { t.push([e].concat(Array.prototype.slice.call(arguments, 0))) } };
+              for (var i = 0; i < w.ttq.methods.length; i++) w.ttq.setAndDefer(w.ttq, w.ttq.methods[i]);
+              
+              w.ttq.load = function(t, e) {
+                var n = "https://analytics.tiktok.com/i18n/pixel/events.js";
+                w.ttq._i = w.ttq._i || {}, w.ttq._i[t] = [], w.ttq._i[t]._u = n, w.ttq._t = w.ttq._t || {}, w.ttq._t[t] = +new Date, w.ttq._o = w.ttq._o || {}, w.ttq._o[t] = e || {};
+                var i = d.createElement("script"); i.type = "text/javascript", i.async = !0, i.src = n + "?sdkid=" + t + "&lib=" + "ttq";
+                var r = d.getElementsByTagName("script")[0]; r.parentNode.insertBefore(i, r)
+              };
+              
+              w.ttq.load('D4LDB1RC77UDM7TK2810');
+              w.ttq.page();
             }(window, document);
           `}
         </Script>

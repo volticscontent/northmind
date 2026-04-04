@@ -39,11 +39,15 @@ export default async function CollectionsPage() {
                         products={products} 
                         isEdit 
                       />
-                      <form action={async () => {
-                        "use server";
-                        await deleteCollection(collection.id);
-                      }}>
-                        <button className="p-2 hover:bg-red-500/10 rounded-lg transition-colors text-white/20 hover:text-red-400 bg-transparent border-none cursor-pointer">
+                      <form 
+                        action={deleteCollection.bind(null, collection.id)}
+                        onSubmit={(e) => {
+                          if (!confirm(`Are you sure you want to delete the "${collection.name}" collection?`)) {
+                            e.preventDefault();
+                          }
+                        }}
+                      >
+                        <button type="submit" className="p-2 hover:bg-red-500/10 rounded-lg transition-colors text-white/20 hover:text-red-400 bg-transparent border-none cursor-pointer">
                             <Trash2 size={16} />
                         </button>
                       </form>

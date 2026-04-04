@@ -66,7 +66,7 @@ export function ProductFaqBox() {
   const [activeFaq, setActiveFaq] = useState<number | null>(null);
 
   return (
-    <div className="space-y-4 pt-10">
+    <div className="space-y-4">
       <h3 className="text-xs uppercase font-bold tracking-luxury text-white mb-6">
         Customer Queries
       </h3>

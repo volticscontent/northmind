@@ -44,13 +44,13 @@ export function ProductCarousel({ products, title }: ProductCarouselProps) {
 
   return (
     <section className="pt-12 pb-2 px-2 md:px-8 max-w-[1600px] mx-auto w-full group/section">
-      <div className="flex items-end justify-between mb-10">
-        <div className="space-y-2">
-          <span className="text-[10px] uppercase tracking-[0.4em] text-accent font-black px-2">
-            Our Collections
+      <div className="flex items-end justify-between mb-8 md:mb-12 border-b border-white/5 pb-6">
+        <div className="space-y-1">
+          <span className="text-[9px] uppercase font-black tracking-[0.5em] text-accent/60 pl-2">
+            Heritage Collection
           </span>
-          <h2 className="text-3xl md:text-5xl font-black uppercase tracking-tighter text-white px-2 ">
-            {title}
+          <h2 className="text-4xl md:text-6xl font-light uppercase tracking-tighter text-white px-1 leading-none italic">
+            {title.split(' ').slice(0, -1).join(' ')} <span className="font-bold not-italic">{title.split(' ').slice(-1)}</span>
           </h2>
         </div>
 
@@ -84,8 +84,8 @@ export function ProductCarousel({ products, title }: ProductCarouselProps) {
         <div
           ref={carouselRef}
           onScroll={checkScroll}
-          className="flex gap-4 pb-2 md:gap-8 overflow-x-auto scrollbar-none snap-x snap-mandatorypt-2"
-          style={{ scrollPadding: "0 2rem" }}
+          className="flex gap-1 pb-4 md:gap-1 overflow-x-auto scrollbar-none snap-x snap-mandatorypt-2"
+          style={{ scrollPadding: "0 0.5rem" }}
         >
           {products.map((product) => (
             <div

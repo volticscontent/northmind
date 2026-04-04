@@ -65,7 +65,7 @@ function CartDrawerInner() {
           <button
             onClick={() => setIsDrawerOpen(false)}
             className="p-3 text-white/100 hover:text-white transition-colors group min-h-[44px] min-w-[44px] flex items-center justify-center"
-            aria-label="Close cart"
+            aria-label="Close basket"
           >
             <X
               size={24}
@@ -172,7 +172,7 @@ function CartDrawerInner() {
               <Link
                 href="/checkout"
                 onClick={() => setIsDrawerOpen(false)}
-                className="btn-premium text-base flex items-center justify-center gap-3 block w-full text-center"
+                className="btn-premium text-base flex items-center justify-center gap-3 w-full text-center"
               >
                 <Lock size={18} />
                 Secure Checkout

@@ -173,6 +173,7 @@ export async function upsertCollection(data: any) {
   const session = await getServerSession(authOptions);
   if ((session?.user as any)?.type !== "ADMIN") throw new Error("Unauthorized Admin Only");
 
+  console.log('📦 Upserting collection:', data.name || data.id);
   const res = await fetch(`${API_URL}/api/collections/upsert`, {
     method: "POST",
     headers: {
@@ -183,7 +184,9 @@ export async function upsertCollection(data: any) {
   });
 
   if (!res.ok) throw new Error("Failed to upsert collection");
-  revalidatePath("/admin/products"); // Revalidate products page as collections might affect it
+  revalidatePath("/admin/collections");
+  revalidatePath("/admin/products");
+  revalidatePath("/");
   return res.json();
 }
 
@@ -191,6 +194,7 @@ export async function deleteCollection(id: string) {
   const session = await getServerSession(authOptions);
   if ((session?.user as any)?.type !== "ADMIN") throw new Error("Unauthorized Admin Only");
 
+  console.log('🗑️ Deleting collection ID:', id);
   const res = await fetch(`${API_URL}/api/collections/${id}`, {
     method: "DELETE",
     headers: {
@@ -199,7 +203,9 @@ export async function deleteCollection(id: string) {
   });
 
   if (!res.ok) throw new Error("Failed to delete collection");
-  revalidatePath("/admin/products"); // Revalidate products page as collections might affect it
+  revalidatePath("/admin/collections");
+  revalidatePath("/admin/products");
+  revalidatePath("/");
 }
 
 export async function setCollectionStatus(collectionName: string, publicado: boolean) {
@@ -248,7 +254,9 @@ export async function updateReview(id: string, data: any) {
   });
 
   if (!res.ok) throw new Error("Failed to update review");
+  revalidatePath("/admin/reviews");
   revalidatePath("/admin/products");
+  revalidatePath("/");
   return res.json();
 }
 
@@ -264,7 +272,9 @@ export async function deleteReview(id: string) {
   });
 
   if (!res.ok) throw new Error("Failed to delete review");
+  revalidatePath("/admin/reviews");
   revalidatePath("/admin/products");
+  revalidatePath("/");
 }
 
 export async function updateUserProfile(data: { name: string; telefone: string; localizacao: string }) {
@@ -278,5 +288,5 @@ export async function updateUserProfile(data: { name: string; telefone: string; 
   });
 
   if (!res.ok) throw new Error("Failed to update profile");
-  revalidatePath("/customer");
+  revalidatePath("/user");
 }

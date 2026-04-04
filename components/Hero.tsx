@@ -5,7 +5,7 @@ import { ResponsiveVideo } from "./ResponsiveVideo";
 
 export function Hero() {
   return (
-    <section className="relative h-[100dvh] w-full h-[75dvh] flex items-center justify-center overflow-hidden bg-black">
+    <section className="relative h-[90dvh] md:h-[100dvh] w-full flex items-center justify-center overflow-hidden bg-black">
       {/* Background Video - mobile gets 0.4MB file, desktop gets 38.8MB */}
       <div className="absolute inset-0 z-0">
         <ResponsiveVideo
@@ -19,7 +19,7 @@ export function Hero() {
 
       {/* Content */}
       <div className="relative z-10 text-center px-6 max-w-4xl animate-fade-in">
-        <h1 className="text-4xl sm:text-6xl md:text-8xl font-black uppercase tracking-tighter mb-6 md:mb-8 leading-[0.9] text-white">
+        <h1 className="text-3xl sm:text-6xl md:text-8xl font-black uppercase tracking-tighter mb-4 md:mb-8 leading-[0.9] text-white">
           British Heritage <br />
           <span className="gold-stroke">Premium</span>
         </h1>

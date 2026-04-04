@@ -55,14 +55,14 @@ export function Header() {
     {
       id: "auth",
       icon: User,
-      label: status === "authenticated" ? (session?.user?.name?.split(" ")[0] || "Profile") : "Login",
-      action: () => router.push(status === "authenticated" ? "/customer" : "/login"),
+      label: status === "authenticated" ? (session?.user?.name?.split(" ")[0] || "Account") : "Login",
+      action: () => router.push(status === "authenticated" ? "/user" : "/login"),
       desktopOnly: true
     },
     {
       id: "cart",
       icon: ShoppingBag,
-      label: "Cart",
+      label: "Basket",
       action: () => setIsDrawerOpen(true),
       badge: totalItems
     },
@@ -90,9 +90,6 @@ export function Header() {
           <nav className="hidden md:flex items-center gap-12">
             <Link href="/collections/jackets" className="text-[10px] uppercase font-bold tracking-luxury text-white/80 hover:text-accent hover:underline transition-all duration-300">
               Jackets
-            </Link>
-            <Link href="/collections/silent-warmth" className="text-[10px] uppercase font-bold tracking-luxury text-white/80 hover:text-accent hover:underline transition-all duration-300">
-              Silent Warmth
             </Link>
             <Link href="/collections/3x1-fragrances" className="text-[10px] uppercase font-bold tracking-luxury text-white/80 hover:text-accent hover:underline transition-all duration-300">
               3x1 Fragrances
