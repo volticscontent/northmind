@@ -13,7 +13,7 @@ import { useRouter } from "next/navigation";
 const mobileNavLinks = [
   { label: "Outerwear", href: "/collections/outerwear" },
   { label: "Silent Warmth", href: "/collections/silent-warmth" },
-  { label: "Fragrance Sets", href: "/collections/fragrance-sets" },
+  // { label: "Fragrance Sets", href: "/collections/fragrance-sets" },
   { label: "About", href: "/about" },
   { label: "FAQ", href: "/faq" },
   { label: "Shipping", href: "/shipping" },
@@ -100,23 +100,23 @@ export function Header() {
           <nav className="hidden md:flex items-center gap-12">
             <Link
               href="/collections/outerwear"
-              className={`text-[10px] uppercase font-bold tracking-luxury  hover:text-accent hover:underline transition-all duration-300 ${
+              className={`text-[10px] uppercase font-bold tracking-luxury   hover:underline transition-all duration-300 ${
                 isScrolled
-                  ? "bg-white text-black  hover:text-accent px-2  "
+                  ? " text-white  hover:text-accent  "
                   : "bg-transparent text-white/80"
               }`}
             >
               Outerwear
             </Link>
             <Link
-              href="/collections/fragrance-sets"
+              href="/collections/silent-warmth"
               className={`text-[10px] uppercase font-bold tracking-luxury  hover:text-accent hover:underline transition-all duration-300 ${
                 isScrolled
-                  ? "bg-white text-black hover:text-accent  px-2  "
+                  ? " text-white  hover:text-accent  "
                   : "bg-transparent text-white/80"
               }`}
             >
-              Fragrance Sets
+              Silent Warmth
             </Link>
           </nav>
 
