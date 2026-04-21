@@ -12,9 +12,15 @@ export default async function Home() {
   const collections = await getCollections();
 
   // Sort collections to put Fragrance Sets at the bottom
+  // Sort collections: regular collections first, then 'Fragrances', then 'Fragrance Sets'
   const sortedCollections = [...collections].sort((a, b) => {
-    if (a.name.toLowerCase().includes('fragrance sets')) return 1;
-    if (b.name.toLowerCase().includes('fragrance sets')) return -1;
+    const bottomOrder = ["fragrances", "fragrance sets"];
+    const indexA = bottomOrder.indexOf(a.name.toLowerCase());
+    const indexB = bottomOrder.indexOf(b.name.toLowerCase());
+
+    if (indexA !== -1 && indexB !== -1) return indexA - indexB;
+    if (indexA !== -1) return 1;
+    if (indexB !== -1) return -1;
     return 0;
   });
 
