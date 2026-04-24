@@ -60,6 +60,7 @@ export function ProductGallery({ images, title, discount, opcoesCor, isFragrance
           style={isFragrance ? { aspectRatio: '1/1' } : { aspectRatio: '4/5' }}
         >
           <Image
+            key={safeImages[activeIndex]}
             src={safeImages[activeIndex]}
             alt={`${title} Principal`}
             fill
@@ -83,6 +84,7 @@ export function ProductGallery({ images, title, discount, opcoesCor, isFragrance
           style={isFragrance ? { aspectRatio: '5/5' } : { aspectRatio: '4/5' }}
         >
           <Image
+            key={safeImages[activeIndex]}
             src={safeImages[activeIndex]}
             alt={title}
             fill

@@ -42,8 +42,8 @@ export const trackViewProduct = (product: Product) => {
   if (ttq) {
     ttq.track('ViewContent', {
       contents: [{
-        id: product.id,
-        name: product.title,
+        content_id: product.id,
+        content_name: product.title,
         quantity: 1,
         price: Number(product.price.toFixed(2)),
       }],
@@ -96,8 +96,8 @@ export const trackAddToCart = (product: Product, quantity: number = 1) => {
   if (ttq) {
     ttq.track('AddToCart', {
       contents: [{
-        id: product.id,
-        name: product.title,
+        content_id: product.id,
+        content_name: product.title,
         quantity: quantity,
         price: Number(product.price.toFixed(2)),
       }],
@@ -150,8 +150,8 @@ export const trackBeginCheckout = (cart: Product[], totalPrice: number) => {
   if (ttq) {
     ttq.track('InitiateCheckout', {
       contents: cart.map(item => ({
-        id: item.id,
-        name: item.title,
+        content_id: item.id,
+        content_name: item.title,
         quantity: item.quantity ?? 1,
         price: Number(item.price.toFixed(2)),
       })),
@@ -194,6 +194,15 @@ export const trackPurchase = (order: { id: string; amount: number; email?: strin
       value: Number(order.amount.toFixed(2)),
       currency: 'GBP',
       order_id: order.id,
+      content_type: 'product',
+    });
+  }
+
+  // TikTok Pixel
+  if (ttq) {
+    ttq.track('CompletePayment', {
+      value: Number(order.amount.toFixed(2)),
+      currency: 'GBP',
       content_type: 'product',
     });
   }

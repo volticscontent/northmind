@@ -1,9 +1,11 @@
+import { Suspense } from "react";
 import type { Metadata, Viewport } from "next";
 import { Plus_Jakarta_Sans, Inter } from "next/font/google";
 import "./globals.css";
 import Script from "next/script";
 import { CartProvider } from "@/lib/CartContext";
 import { CartDrawer } from "@/components/CartDrawer";
+import { PixelTracker } from "@/components/PixelTracker";
 import { cn } from "@/lib/utils";
 import AuthContext from "@/components/AuthContext";
 
@@ -53,8 +55,9 @@ export default function RootLayout({
         />
         
         {/* Facebook Pixel */}
-        <Script id="fb-pixel" strategy="afterInteractive">
-          {`
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
             !function(f,b,e,v,n,t,s)
             {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
             n.callMethod.apply(n,arguments):n.queue.push(arguments)};
@@ -64,31 +67,24 @@ export default function RootLayout({
             s.parentNode.insertBefore(t,s)}(window, document,'script',
             'https://connect.facebook.net/en_US/fbevents.js');
             fbq('init', '${process.env.NEXT_PUBLIC_FB_PIXEL_ID || '636389112021100'}');
-            fbq('track', 'PageView');
-          `}
-        </Script>
+          `}}
+        />
 
         {/* TikTok Pixel */}
-        <Script id="tiktok-pixel" strategy="afterInteractive">
-          {`
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
             !function (w, d, t) {
-              w.ttq = w.ttq || [];
-              w.ttq.methods = ["page", "track", "identify", "instances", "debug", "on", "off", "once", "ready", "alias", "group", "setAlias", "setGroup", "identifyUser", "addPaymentInfo", "addContent", "addToCart", "addToWishlist", "beginCheckout", "subscribe", "completeRegistration", "purchase"];
-              w.ttq.setAndDefer = function(t, e) { t[e] = function() { t.push([e].concat(Array.prototype.slice.call(arguments, 0))) } };
-              for (var i = 0; i < w.ttq.methods.length; i++) w.ttq.setAndDefer(w.ttq, w.ttq.methods[i]);
-              
-              w.ttq.load = function(t, e) {
-                var n = "https://analytics.tiktok.com/i18n/pixel/events.js";
-                w.ttq._i = w.ttq._i || {}, w.ttq._i[t] = [], w.ttq._i[t]._u = n, w.ttq._t = w.ttq._t || {}, w.ttq._t[t] = +new Date, w.ttq._o = w.ttq._o || {}, w.ttq._o[t] = e || {};
-                var i = d.createElement("script"); i.type = "text/javascript", i.async = !0, i.src = n + "?sdkid=" + t + "&lib=" + "ttq";
-                var r = d.getElementsByTagName("script")[0]; r.parentNode.insertBefore(i, r)
-              };
-              
-              w.ttq.load('${process.env.NEXT_PUBLIC_TIKTOK_PIXEL_ID || 'D4LDB1RC77UDM7TK2810'}');
-              w.ttq.page();
-            }(window, document);
-          `}
-        </Script>
+              w.TiktokAnalyticsObject=t;var ttq=w[t]=w[t]||[];ttq.methods=["page","track","identify","instances","debug","on","off","once","ready","alias","group","enableCookie","disableCookie"],ttq.setAndDefer=function(t,e){t[e]=function(){t.push([e].concat(Array.prototype.slice.call(arguments,0)))}};for(var i=0;i<ttq.methods.length;i++)ttq.setAndDefer(ttq,ttq.methods[i]);ttq.instance=function(t){for(var e=ttq._i[t]||[],n=0;n<ttq.methods.length;n++)ttq.setAndDefer(e,ttq.methods[n]);return e},ttq.load=function(e,n){var i="https://analytics.tiktok.com/i18n/pixel/events.js";ttq._i=ttq._i||{},ttq._i[e]=[],ttq._i[e]._u=i,ttq._t=ttq._t||{},ttq._t[e]=+new Date,ttq._o=ttq._o||{},ttq._o[e]=n||{};var o=document.createElement("script");o.type="text/javascript",o.async=!0,o.src=i+"?sdkid="+e+"&lib="+t;var a=document.getElementsByTagName("script")[0];a.parentNode.insertBefore(o,a)};
+              ttq.load('${process.env.NEXT_PUBLIC_TIKTOK_PIXEL_ID || 'D4LDB1RC77UDM7TK2810'}');
+            }(window, document, 'ttq');
+          `}}
+        />
+
+        {/* Tracking route changes */}
+        <Suspense fallback={null}>
+          <PixelTracker />
+        </Suspense>
 
         <AuthContext>
           <CartProvider>

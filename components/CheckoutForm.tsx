@@ -90,9 +90,14 @@ export default function CheckoutForm({ items, clientSecret }: CheckoutFormProps)
     0,
   );
 
-  // Early trigger for Initiate Checkout (as soon as basic info is filled)
-  const handleEarlyIC = React.useCallback(async () => {
-    if (icTriggered.current || !email || !phone || !firstName) return;
+  // Early trigger for Initiate Checkout (as soon as basic info is filled OR Payment Element is touched)
+  const handleEarlyIC = React.useCallback(async (force: boolean | React.FocusEvent = false) => {
+    if (icTriggered.current) return;
+    
+    const isForced = typeof force === 'boolean' && force === true;
+    
+    // Se não for forçado (pelo PaymentElement) e estiver faltando dados, aborta o trigger silencioso do onBlur
+    if (!isForced && (!email || !phone || !firstName)) return;
     
     icTriggered.current = true;
     if (email) localStorage.setItem('nm_customer_email', email);
@@ -110,9 +115,9 @@ export default function CheckoutForm({ items, clientSecret }: CheckoutFormProps)
 
       await axios.post(`${API_URL}/api/payment/track-ic`, {
         customer: {
-          name: `${firstName} ${lastName}`,
-          email,
-          phone: `${selectedCountry.code}${phone}`
+          name: `${firstName || 'Guest'} ${lastName}`,
+          email: email || 'guest@northmind.store',
+          phone: phone ? `${selectedCountry.code}${phone}` : '00000000000'
         },
         trackingParameters: {
           utmify_id: utmifyId,
@@ -126,7 +131,7 @@ export default function CheckoutForm({ items, clientSecret }: CheckoutFormProps)
       console.log('✅ Early IC Tracking Sent Successfully');
     } catch (e) {
       console.warn('⚠️ Early IC failed', e);
-      icTriggered.current = false; // Permite tentar novamente no Pay Now
+      icTriggered.current = false; // Permite tentar novamente no Pay Now se falhar
     }
   }, [email, phone, firstName, lastName, selectedCountry, total, items]);
 
@@ -495,6 +500,14 @@ export default function CheckoutForm({ items, clientSecret }: CheckoutFormProps)
           <div className="payment-wrapper">
             {/* PaymentElement - Stripe Tabs Layout configurado no Componente Pai */}
             <PaymentElement
+              onChange={(event) => {
+                // Dispara o Initiate Checkout assim que o cliente interagir com o campo de cartão
+                // garantindo que ele está com forte intenção de compra
+                if (!event.empty && !icTriggered.current) {
+                  console.log("💳 Card Element Interaction Detected! Triggering strong IC...");
+                  handleEarlyIC(true);
+                }
+              }}
               options={{
                 layout: "accordion", 
                 wallets: {
