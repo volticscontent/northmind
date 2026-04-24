@@ -1,7 +1,8 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { X, Save, ImagePlus, User, Package, Trash2, Edit2, Plus, Filter, Search, ChevronDown, Check } from "lucide-react";
+import Image from "next/image";
+import { X, Save, ImagePlus, User, Package, Trash2, Edit2, Plus, Filter, Search, ChevronDown, Check, Eye, EyeOff } from "lucide-react";
 import { MediaUpload } from "./MediaUpload";
 import { upsertCollection } from "@/lib/actions";
 
@@ -18,6 +19,7 @@ export function CollectionForm({ collection, onClose, products: allProducts }: C
     handle: collection?.handle || "",
     description: collection?.description || "",
     image: collection?.image || "",
+    publicado: collection?.publicado !== undefined ? collection.publicado : true,
     selectedProductIds: collection?.products?.map((p: any) => p.id) || [],
   });
 
@@ -75,16 +77,30 @@ export function CollectionForm({ collection, onClose, products: allProducts }: C
         </div>
         
         <div className="flex items-center gap-4">
-           <button type="button" onClick={onClose} className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-white/40 hover:text-white transition-colors">
-              Cancel
-            </button>
-            <button 
-              onClick={handleSubmit} 
-              disabled={isSubmitting} 
-              className="min-w-[200px] px-8 py-4 bg-white text-black text-[10px] font-black uppercase tracking-widest rounded-xl hover:bg-white/90 disabled:opacity-50 transition-all shadow-2xl shadow-white/10"
-            >
-              {isSubmitting ? "Syncing..." : "Save Collection"}
-            </button>
+          {/* Collection Visibility Toggle */}
+          <button
+            type="button"
+            onClick={() => setFormData(prev => ({ ...prev, publicado: !prev.publicado }))}
+            className={`flex items-center gap-3 px-5 py-4 rounded-xl border transition-all text-[10px] font-black uppercase tracking-widest ${
+              formData.publicado
+                ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-500 hover:bg-emerald-500/20"
+                : "bg-white/5 border-white/10 text-white/40 hover:bg-white/10"
+            }`}
+          >
+            {formData.publicado ? <Eye size={14} /> : <EyeOff size={14} />}
+            {formData.publicado ? "Collection Live" : "Draft Offline"}
+          </button>
+
+          <button type="button" onClick={onClose} className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-white/40 hover:text-white transition-colors">
+            Cancel
+          </button>
+          <button
+            onClick={handleSubmit}
+            disabled={isSubmitting}
+            className="min-w-[200px] px-8 py-4 bg-white text-black text-[10px] font-black uppercase tracking-widest rounded-xl hover:bg-white/90 disabled:opacity-50 transition-all shadow-2xl shadow-white/10"
+          >
+            {isSubmitting ? "Syncing..." : "Save Collection"}
+          </button>
         </div>
       </div>
 
@@ -177,9 +193,9 @@ export function CollectionForm({ collection, onClose, products: allProducts }: C
                                 }`}
                             >
                                 <div className="flex items-center gap-4">
-                                    <div className="w-10 h-10 rounded-lg overflow-hidden bg-white/5 border border-white/10">
+                                    <div className="relative w-10 h-10 rounded-lg overflow-hidden bg-white/5 border border-white/10">
                                         {(product.fotoPrincipal || product.fotos?.[0]) && (
-                                            <img src={product.fotoPrincipal || product.fotos[0]} className="w-full h-full object-cover" />
+                                            <Image src={product.fotoPrincipal || product.fotos[0]} alt={product.nome} fill className="object-cover" />
                                         )}
                                     </div>
                                     <div className="text-left">
@@ -229,10 +245,11 @@ export function CollectionForm({ collection, onClose, products: allProducts }: C
                   }}
                   className="group relative aspect-square rounded-xl overflow-hidden border border-white/5 hover:border-accent transition-all shadow-lg"
                 >
-                  <img 
+                  <Image 
                     src={product.fotoPrincipal || (product.fotos?.[0] || "")} 
                     alt={product.nome}
-                    className="w-full h-full object-cover group-hover:scale-110 transition-transform"
+                    fill
+                    className="object-cover group-hover:scale-110 transition-transform"
                   />
                   <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-3">
                     <p className="text-[8px] font-black uppercase text-white truncate text-left">{product.nome}</p>

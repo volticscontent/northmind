@@ -17,7 +17,7 @@ export function SetPasswordForm({ userId, orderId, email }: { userId: string, or
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (password.length < 6) {
-      setError("A senha deve ter pelo menos 6 caracteres.");
+      setError("Password must be at least 6 characters.");
       return;
     }
 
@@ -34,10 +34,10 @@ export function SetPasswordForm({ userId, orderId, email }: { userId: string, or
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.error || "Falha ao definir a senha.");
+        throw new Error(data.error || "Failed to set password.");
       }
 
-      // Senha definida com sucesso, fazer login!
+      // Password set successfully, log in!
       setIsSuccess(true);
       
       const loginResult = await signIn("credentials", {
@@ -47,14 +47,14 @@ export function SetPasswordForm({ userId, orderId, email }: { userId: string, or
       });
 
       if (loginResult?.error) {
-        setError("Senha criada, mas falha ao auto-logar. Faça login manualmente.");
+        setError("Password created, but auto-login failed. Please sign in manually.");
         setTimeout(() => router.push("/login"), 3000);
       } else {
         router.push("/user");
       }
 
     } catch (err: any) {
-      setError(err.message || "Algo deu errado. Tente novamente.");
+      setError(err.message || "Something went wrong. Please try again.");
     } finally {
       setIsLoading(false);
     }
@@ -66,8 +66,8 @@ export function SetPasswordForm({ userId, orderId, email }: { userId: string, or
         <div className="size-16 rounded-full bg-green-500/20 flex items-center justify-center text-green-500 mb-2">
           <CheckCircle2 size={32} />
         </div>
-        <h3 className="text-2xl font-black uppercase text-white">Conta Criada</h3>
-        <p className="text-white/60 font-light text-sm">Transferindo você para o seu painel seguro...</p>
+        <h3 className="text-2xl font-black uppercase text-white">Account Created</h3>
+        <p className="text-white/60 font-light text-sm">Transferring you to your secure dashboard...</p>
         <Loader2 className="animate-spin text-accent mt-4" size={24} />
       </div>
     );
@@ -78,9 +78,9 @@ export function SetPasswordForm({ userId, orderId, email }: { userId: string, or
       <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent pointer-events-none" />
       
       <div className="mb-6 relative z-10 text-center">
-        <h3 className="text-lg font-black uppercase tracking-widest text-white mb-2">Proteja sua Conta</h3>
+        <h3 className="text-lg font-black uppercase tracking-widest text-white mb-2">Secure Your Account</h3>
         <p className="text-white/40 text-[11px] font-medium tracking-wide">
-          Atrele uma senha permanente ao e-mail <br />
+          Attach a permanent password to the email <br />
           <strong className="text-accent">{email}</strong>
         </p>
       </div>
@@ -103,7 +103,7 @@ export function SetPasswordForm({ userId, orderId, email }: { userId: string, or
             onChange={(e) => setPassword(e.target.value)}
             disabled={isLoading}
             required
-            placeholder="Nova senha secreta..."
+            placeholder="New secret password..."
             className="w-full bg-black/50 border border-white/10 rounded-xl py-3 pl-12 pr-4 text-white text-sm focus:border-accent/40 focus:bg-white/5 transition-all outline-none"
           />
         </div>
@@ -115,7 +115,7 @@ export function SetPasswordForm({ userId, orderId, email }: { userId: string, or
         >
           {isLoading ? <Loader2 className="animate-spin" size={16} /> : (
             <>
-              Confirmar Senha
+              Confirm Password
               <ArrowRight size={14} />
             </>
           )}

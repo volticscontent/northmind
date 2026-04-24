@@ -42,8 +42,8 @@ export default async function DashboardPage() {
               <ShoppingBag size={48} className="mx-auto text-white/20" />
               <h1 className="text-2xl font-light">Account <span className="font-medium text-accent">Not Found</span></h1>
               <p className="text-sm text-white/40 leading-relaxed">
-                We couldn't find a customer profile for <span className="text-white font-medium">{session.user.email}</span>. 
-                This usually happens if you haven't placed an order yet using this account.
+                We couldn&apos;t find a customer profile for <span className="text-white font-medium">{session.user.email}</span>. 
+                This usually happens if you haven&apos;t placed an order yet using this account.
               </p>
               <div className="pt-4 flex flex-col gap-3">
                 <Link href="/" className="px-8 py-4 bg-white text-black text-[10px] font-black uppercase tracking-widest rounded-xl hover:bg-accent transition-colors">
@@ -69,12 +69,12 @@ export default async function DashboardPage() {
           <Clock size={48} className="mx-auto text-rose-500/40" />
           <h1 className="text-2xl font-light">Connection <span className="font-medium">Error</span></h1>
           <p className="text-sm text-white/40">The backend server is not responding. Please make sure the backend is running.</p>
-          <button 
-            onClick={() => window.location.reload()}
-            className="mt-6 px-8 py-4 bg-white/5 border border-white/10 text-white text-[10px] font-black uppercase tracking-widest rounded-xl hover:bg-white/10 transition-colors"
+          <a 
+            href="/user"
+            className="inline-block mt-6 px-8 py-4 bg-white/5 border border-white/10 text-white text-[10px] font-black uppercase tracking-widest rounded-xl hover:bg-white/10 transition-colors"
           >
             Retry Connection
-          </button>
+          </a>
         </div>
       </div>
     );
@@ -93,9 +93,12 @@ export default async function DashboardPage() {
               <ChevronRight size={10} />
               <span className="text-accent">Member Area</span>
             </div>
-            <h1 className="text-4xl md:text-5xl font-light tracking-tight">
-              Welcome, <span className="font-medium">{user.name?.split(" ")[0]}</span>
+            <h1 className="text-4xl md:text-5xl font-black uppercase tracking-tighter text-white">
+              Welcome, <span className="text-accent">{user.name?.split(" ")[0]}</span>
             </h1>
+            <p className="text-xs font-bold uppercase tracking-widest text-white/40 mt-2">
+              Manage your orders and account details
+            </p>
           </div>
           <div className="flex items-center gap-4">
             <Link

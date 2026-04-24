@@ -40,7 +40,7 @@ export function Hero() {
         </p>
         <div className="flex flex-col md:flex-row items-center justify-center gap-4 md:gap-6 w-full md:w-auto">
           <Link
-            href="/collections/jackets"
+            href="/collections/outerwear"
             className="btn-premium bg-white block w-full md:w-auto text-center active:scale-[0.97] active:opacity-90"
           >
             Shop Collection

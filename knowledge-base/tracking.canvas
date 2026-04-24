@@ -1,0 +1,12 @@
+{
+	"nodes":[
+		{"id":"node_20260423_01","type":"file","file":"knowledge-base/wiki/integrations/northmind-store.md","x":0,"y":400,"width":260,"height":80},
+		{"id":"node_20260423_02","type":"file","file":"knowledge-base/raw/docs/2026-04-23-northmind-store.md","x":300,"y":400,"width":260,"height":80},
+		{"id":"node_20260423_03","type":"file","file":"knowledge-base/wiki/architecture/northmind-repo.md","x":600,"y":800,"width":260,"height":80},
+		{"id":"node_20260423_04","type":"file","file":"knowledge-base/raw/docs/2026-04-23-northmind-repo.md","x":900,"y":800,"width":260,"height":80}
+	],
+	"edges":[
+		{"id":"edge_20260423_01","fromNode":"node_20260423_01","fromSide":"right","toNode":"node_20260423_02","toSide":"left"},
+		{"id":"edge_20260423_02","fromNode":"node_20260423_03","fromSide":"right","toNode":"node_20260423_04","toSide":"left"}
+	]
+}

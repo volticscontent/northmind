@@ -106,7 +106,7 @@ export function ReviewManager() {
                 <span className="text-[9px] text-white/20 font-bold uppercase">{review.produto?.nome}</span>
               </div>
               
-              <p className="text-xs text-white/60 leading-relaxed max-w-3xl italic">"{review.texto}"</p>
+              <p className="text-xs text-white/60 leading-relaxed max-w-3xl italic">&quot;{review.texto}&quot;</p>
               
               <div className="flex items-center gap-6">
                 <div className="flex items-center gap-2">

@@ -1,6 +1,7 @@
-import { getCollections, getProducts, deleteCollection } from "@/lib/actions";
-import { Plus, Layout, Trash2, Edit3, Package } from "lucide-react";
+import { getCollections, getProducts } from "@/lib/actions";
+import { Plus, Layout, Package } from "lucide-react";
 import { CollectionFormWrapper } from "@/components/admin/CollectionFormWrapper";
+import { DeleteCollectionForm } from "@/components/admin/DeleteCollectionForm";
 
 export default async function CollectionsPage() {
   const collections = await getCollections();
@@ -14,7 +15,7 @@ export default async function CollectionsPage() {
             Collections
           </h2>
           <p className="text-xs font-bold uppercase tracking-widest text-white/40">
-            Manage your store's categories and product groups
+            Manage your store&apos;s categories and product groups
           </p>
         </div>
         
@@ -39,18 +40,10 @@ export default async function CollectionsPage() {
                         products={products} 
                         isEdit 
                       />
-                      <form 
-                        action={deleteCollection.bind(null, collection.id)}
-                        onSubmit={(e) => {
-                          if (!confirm(`Are you sure you want to delete the "${collection.name}" collection?`)) {
-                            e.preventDefault();
-                          }
-                        }}
-                      >
-                        <button type="submit" className="p-2 hover:bg-red-500/10 rounded-lg transition-colors text-white/20 hover:text-red-400 bg-transparent border-none cursor-pointer">
-                            <Trash2 size={16} />
-                        </button>
-                      </form>
+                      <DeleteCollectionForm 
+                        collectionId={collection.id} 
+                        collectionName={collection.name} 
+                      />
                   </div>
                 </div>
 

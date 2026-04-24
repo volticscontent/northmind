@@ -25,9 +25,9 @@ export function ProductGallery({ images, title, discount, opcoesCor, isFragrance
   const safeImages = images && images.length > 0 ? images : ["/assets/community/1.png"];
   return (
     <>
-      {/* Visualização Desktop (Thumbnails Esquerda + Foto Principal) */}
+      {/* Desktop View (Left Thumbnails + Main Photo) */}
       <div className="hidden md:flex gap-4 items-start">
-        {/* Carrossel Vertical de Miniaturas - Só aparece se houver fotos extras */}
+        {/* Vertical Thumbnail Carousel - Only shows if there are extra photos */}
         {safeImages.length > 1 && (
           <div
             className="w-20 lg:w-24 flex-shrink-0 flex flex-col gap-3 overflow-y-auto scrollbar-hide snap-y max-h-[calc(100vh-8rem)]"
@@ -75,7 +75,7 @@ export function ProductGallery({ images, title, discount, opcoesCor, isFragrance
         </div>
       </div>
 
-      {/* Visualização Mobile (Foto Principal + Carrossel) */}
+      {/* Mobile View (Main Photo + Carousel) */}
       <div className="flex md:hidden flex-col gap-[1px]">
         {/* Foto Principal */}
         <div
@@ -97,7 +97,7 @@ export function ProductGallery({ images, title, discount, opcoesCor, isFragrance
           )}
         </div>
 
-        {/* Carrossel de Miniaturas Mobile - Só aparece se houver fotos extras */}
+        {/* Mobile Thumbnail Carousel - Only shows if there are extra photos */}
         {safeImages.length > 1 && (
           <div className="flex overflow-x-auto gap-[1px] pb-2 snap-x scrollbar-hide" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
             {safeImages.map((imgSrc, i) => (

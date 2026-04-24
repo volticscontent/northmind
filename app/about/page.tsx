@@ -17,19 +17,19 @@ export default function AboutPage() {
 
         <section className="prose prose-invert prose-lg mx-auto text-white/60 font-medium tracking-wide leading-relaxed">
           <p>
-            Fundada em 2026, a North Mind nasceu da ambição de fundir a alfaiataria clássica britânica com a funcionalidade técnica necessária para o homem moderno. Nossa essência reside no conceito de "Silent Luxury" — peças que não precisam gritar para serem notadas.
+            Established in 2026, North Mind was born from the ambition to merge classic British tailoring with the technical functionality required for the modern man. Our essence lies in the concept of &quot;Silent Luxury&quot; — pieces that don&apos;t need to shout to be noticed.
           </p>
           <div className="py-12">
             <div className="premium-border p-8 bg-card/30 relative overflow-hidden group">
               <div className="absolute top-0 right-0 w-32 h-32 bg-accent/5 rounded-full -translate-y-1/2 translate-x-1/2 blur-3xl group-hover:bg-accent/10 transition-colors duration-700" />
               <h3 className="text-accent text-xs font-black uppercase tracking-luxury mb-4">Meticulous Craftsmanship</h3>
               <p className="text-sm md:text-base italic">
-                "Cada peça é concebida para durar gerações, não apenas temporadas. Utilizamos materiais de origem ética e técnicas ancestrais de British Heritage."
+                &quot;Every piece is conceived to last generations, not just seasons. We utilize ethically sourced materials and ancestral British Heritage techniques.&quot;
               </p>
             </div>
           </div>
           <p>
-            Da seleção das lãs mais finas às penugens de isolamento térmico de última geração, cada detalhe é uma homenagem à durabilidade e ao design atemporal. A North Mind não é apenas uma marca de roupas; é um manifesto de sofisticação silenciosa para aqueles que valorizam a substância acima do espetáculo.
+            From the selection of the finest wools to state-of-the-art thermal insulation down, every detail is a tribute to durability and timeless design. North Mind is not just a clothing brand; it is a manifesto of quiet sophistication for those who value substance above spectacle.
           </p>
         </section>
 

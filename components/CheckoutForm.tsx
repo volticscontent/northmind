@@ -39,7 +39,7 @@ export default function CheckoutForm({ items, clientSecret }: CheckoutFormProps)
   const elements = useElements();
   const { data: session, status } = useSession();
 
-  // Estados do formulário (Contato e Endereço)
+  // Form states (Contact and Address)
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
   const [showCountrySelector, setShowCountrySelector] = useState(false);
@@ -59,7 +59,7 @@ export default function CheckoutForm({ items, clientSecret }: CheckoutFormProps)
   useEffect(() => {
     if (session?.user) {
       if (session.user.email) setEmail(session.user.email);
-      // Aqui poderíamos extrair o telefone do banco se disponível, mantemos o fluxo
+      // Here we could extract phone from DB if available, keep flow
       if (session.user.name) {
         const parts = session.user.name.split(" ");
         setFirstName(parts[0] || "");
@@ -68,12 +68,12 @@ export default function CheckoutForm({ items, clientSecret }: CheckoutFormProps)
     }
   }, [session]);
 
-  // Estados de controle
+  // Control states
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
 
-  // Cálculo de totais
-  // Subtotal baseia-se no preço ORIGINAL para que a conta "Subtotal - Economia = Total" faça sentido
+  // Total calculations
+  // Subtotal is based on ORIGINAL price so that "Subtotal - Savings = Total" makes sense
   const subtotal = items.reduce(
     (acc, item) => acc + ( (item.discount ? (item.price + item.discount) : item.price) * item.quantity ),
     0,
@@ -84,13 +84,13 @@ export default function CheckoutForm({ items, clientSecret }: CheckoutFormProps)
     0,
   );
   
-  // O Total é sempre a soma do que o cliente realmente vai pagar (preços já descontados)
+  // Total is always the sum of what the customer actually pays (already discounted)
   const total = items.reduce(
     (acc, item) => acc + item.price * item.quantity,
     0,
   );
 
-  // Gatilho antecipado para Initiate Checkout (assim que preencher o básico)
+  // Early trigger for Initiate Checkout (as soon as basic info is filled)
   const handleEarlyIC = React.useCallback(async () => {
     if (icTriggered.current || !email || !phone || !firstName) return;
     
@@ -138,10 +138,10 @@ export default function CheckoutForm({ items, clientSecret }: CheckoutFormProps)
     }).format(value);
   };
 
-  // Tratamento da submissão manual do Checkout (Div simulando formulário)
+  // Manual Checkout submission handling (Div simulating form)
   const handleSubmit = async () => {
     if (!stripe || !elements) {
-      // Stripe.js ainda não carregou.
+      // Stripe.js has not loaded yet.
       return;
     }
 
@@ -172,13 +172,13 @@ export default function CheckoutForm({ items, clientSecret }: CheckoutFormProps)
         }).catch(e => console.warn('IC tracking fallback failed', e));
       }
 
-      // 1. Create Order in Database (PENDENTE/PAGO)
+      // 1. Create Order in Database (PENDING/PAID)
       const cleanTotal = Number(total.toFixed(2));
       const { data: orderResponse } = await axios.post(`${API_URL}/api/orders`, {
         items,
         total: cleanTotal,
-        status: "PAGO", // Simplificado para este fluxo direto
-        userEmail: session?.user?.email, // Envia email da sessão se logado
+        status: "PAID", // Simplified for this direct flow
+        userEmail: session?.user?.email, // Sends session email if logged in
         customerInfo: {
           email,
           phone,
@@ -194,7 +194,7 @@ export default function CheckoutForm({ items, clientSecret }: CheckoutFormProps)
       });
 
       // 2. Trigger validation
-      const { error: submitError } = await elements.submit();
+      const { error: submitError, submission } = await (elements as any).submit();
       if (submitError) {
         setErrorMessage(
           submitError.message || "Payment validation error.",
@@ -203,9 +203,32 @@ export default function CheckoutForm({ items, clientSecret }: CheckoutFormProps)
         return;
       }
 
-      // 3. Update Stripe Metadata with Customer & UTMify details
       const intentId = clientSecret ? clientSecret.split('_secret')[0] : null;
 
+      // --- CUSTOM PAYMENT METHOD HANDLE (NORTHMIND) ---
+      if (submission?.selectedPaymentMethod?.type === "cpmt_northmind") {
+        console.log("🚀 Custom Payment Method Selected: northmind");
+        try {
+          // Track purchase as 'northmind' directly
+          await axios.post(`${API_URL}/api/payment/track-purchase`, {
+            intentId: intentId,
+            paymentMethod: "northmind",
+            utmifyIdManual: utmifyId
+          });
+
+          // Custom Redirect for Northmind
+          window.location.href = `${window.location.origin}/success?o=${orderResponse.id}&u=${orderResponse.userId}&utmify_id=${utmifyId}&method=northmind`;
+          return;
+        } catch (e) {
+          console.warn("Northmind tracking error", e);
+          // Fallback: stay on page or proceed to redirect anyway? 
+          // Usually redirect as order is already PAGO in our DB
+          window.location.href = `${window.location.origin}/success?o=${orderResponse.id}&u=${orderResponse.userId}&utmify_id=${utmifyId}`;
+          return;
+        }
+      }
+
+      // 3. Update Stripe Metadata (For standard card/BNPL methods)
       if (intentId) {
         await axios.post(`${API_URL}/api/payment/update-metadata`, {
           intentId,
@@ -225,7 +248,7 @@ export default function CheckoutForm({ items, clientSecret }: CheckoutFormProps)
       const { error } = await stripe.confirmPayment({
         elements,
         confirmParams: {
-          return_url: `${window.location.origin}/sucesso?o=${orderResponse.id}&u=${orderResponse.userId}&utmify_id=${utmifyId}`,
+          return_url: `${window.location.origin}/success?o=${orderResponse.id}&u=${orderResponse.userId}&utmify_id=${utmifyId}`,
           payment_method_data: {
             billing_details: {
               name: `${firstName} ${lastName}`,
@@ -265,12 +288,12 @@ export default function CheckoutForm({ items, clientSecret }: CheckoutFormProps)
   return (
     <div className="checkout-container">
       {/* 
-        A estrutura utiliza flexbox row-reverse no desktop para manter 
-        a fidelidade visual, mas com CSS manipulamos o order ou o flex-direction 
-        no mobile para mostrar o resumo por cima.
+        The structure uses flexbox row-reverse on desktop to maintain 
+        visual fidelity, but with CSS we manipulate order or flex-direction 
+        on mobile to show the summary on top.
       */}
 
-      {/* --- COLUNA ESQUERDA (Formulário) --- */}
+      {/* --- LEFT COLUMN (Form) --- */}
       <div className="left-col">
         <div className="left-content">
           <div className="section-header">
@@ -473,7 +496,11 @@ export default function CheckoutForm({ items, clientSecret }: CheckoutFormProps)
             {/* PaymentElement - Stripe Tabs Layout configurado no Componente Pai */}
             <PaymentElement
               options={{
-                paymentMethodOrder: ["apple_pay", "google_pay", "card"],
+                layout: "accordion", 
+                wallets: {
+                  applePay: "auto",
+                  googlePay: "auto",
+                },
                 fields: {
                   billingDetails: { name: "never", email: "never" },
                 },
@@ -509,7 +536,7 @@ export default function CheckoutForm({ items, clientSecret }: CheckoutFormProps)
         </div>
       </div>
 
-      {/* --- COLUNA DIREITA (Resumo do Pedido) --- */}
+      {/* --- RIGHT COLUMN (Order Summary) --- */}
       <div className="right-col">
         <div className="right-content">
           <div className="order-items">

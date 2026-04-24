@@ -11,9 +11,8 @@ import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 
 const mobileNavLinks = [
-  { label: "Jackets", href: "/collections/jackets" },
+  { label: "Outerwear", href: "/collections/outerwear" },
   { label: "Silent Warmth", href: "/collections/silent-warmth" },
-  { label: "3x1 Fragrances", href: "/collections/3x1-fragrances" },
   { label: "About", href: "/about" },
   { label: "FAQ", href: "/faq" },
   { label: "Shipping", href: "/shipping" },
@@ -88,11 +87,11 @@ export function Header() {
 
           {/* Desktop Nav */}
           <nav className="hidden md:flex items-center gap-12">
-            <Link href="/collections/jackets" className="text-[10px] uppercase font-bold tracking-luxury text-white/80 hover:text-accent hover:underline transition-all duration-300">
-              Jackets
+            <Link href="/collections/outerwear" className="text-[10px] uppercase font-bold tracking-luxury text-white/80 hover:text-accent hover:underline transition-all duration-300">
+              Outerwear
             </Link>
-            <Link href="/collections/3x1-fragrances" className="text-[10px] uppercase font-bold tracking-luxury text-white/80 hover:text-accent hover:underline transition-all duration-300">
-              3x1 Fragrances
+            <Link href="/collections/silent-warmth" className="text-[10px] uppercase font-bold tracking-luxury text-white/80 hover:text-accent hover:underline transition-all duration-300">
+              Silent Warmth
             </Link>
           </nav>
 

@@ -256,7 +256,7 @@ export function ProductReviews({ produtoId }: ProductReviewsProps) {
                   {/* Right Column: Content & Media */}
                   <div className="flex-grow space-y-6">
                     <p className="text-sm md:text-base leading-relaxed text-white/80 font-medium font-plus-jakarta-sans italic">
-                      "{review.texto}"
+                      &quot;{review.texto}&quot;
                     </p>
 
                     {/* Media Gallery */}

@@ -43,7 +43,8 @@ export default async function Home() {
           </div>
         ))}
 
-        <VideoSection collections={collections} />
+        {/* TODO: Seção desativada porque os cards de coleção (react-bits carousel) estão sem fotos e desatualizados */}
+        {/* <VideoSection collections={collections} /> */}
 
         {/* If no collections found, show a fallback space */}
         {collectionsWithProducts.length === 0 && (

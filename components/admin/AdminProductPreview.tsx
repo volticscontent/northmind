@@ -1,8 +1,8 @@
 "use client";
 
 import { Product } from "@/lib/data-loader";
-import { Star, ShieldCheck, CheckCircle2, Package, Truck, Smartphone, Monitor } from "lucide-react";
 import Image from "next/image";
+import { Star, ShieldCheck, CheckCircle2, Package, Truck, Smartphone, Monitor } from "lucide-react";
 import { ProductFaqBox } from "../product/ProductFaqBox";
 
 interface AdminProductPreviewProps {
@@ -38,10 +38,11 @@ export function AdminProductPreview({ product, viewMode }: AdminProductPreviewPr
           {/* Images */}
           <div className="space-y-4">
              <div className="relative aspect-[4/5] premium-border bg-white/5 overflow-hidden">
-                <img 
+                <Image 
                   src={images[0]} 
                   alt="Preview" 
-                  className="w-full h-full object-cover"
+                  fill
+                  className="object-cover"
                 />
                 {discount > 0 && (
                   <div className="absolute top-4 left-4 z-10 bg-black/80 text-white text-[8px] font-black px-2 py-1 uppercase tracking-luxury">

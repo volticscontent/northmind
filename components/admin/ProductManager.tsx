@@ -475,7 +475,7 @@ export function ProductManager({ initialProducts }: { initialProducts: any[] }) 
                       maxFiles={3}
                     />
                     <p className="text-[9px] text-white/20 uppercase font-bold text-center mt-4">
-                      Reels appear in the 'Experience' section on the product page
+                      Reels appear in the &apos;Experience&apos; section on the product page
                     </p>
                   </div>
                 </div>

@@ -8,7 +8,7 @@ import CheckoutForm, { OrderItem } from "@/components/CheckoutForm";
 import { useCart } from "@/lib/CartContext";
 import { API_URL } from "@/lib/api";
 
-// Chave pública do Stripe
+// Stripe Public Key
 const stripePromise = loadStripe(
   process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY as string
 );
@@ -21,7 +21,7 @@ export default function CheckoutPage() {
   const [initError, setInitError] = useState("");
   const totalAmount = totalPrice;
 
-  // Transforma os itens do cart global para o formato do CheckoutForm
+  // Transform global cart items to CheckoutForm format
   const orderItems: OrderItem[] = cart.map((item) => ({
     id: item.id,
     name: item.title,
@@ -33,8 +33,8 @@ export default function CheckoutPage() {
   }));
 
   useEffect(() => {
-    console.log("🛒 Total no Carrinho (GBP):", totalAmount);
-    if (totalAmount <= 0) return; // Se carrinho zerado, não tenta criar o pagamento
+    console.log("🛒 Cart Total (GBP):", totalAmount);
+    if (totalAmount <= 0) return; // If cart is empty, do not attempt to create payment
 
     // Cria o PaymentIntent via API route
     const createPaymentIntent = async () => {
@@ -53,12 +53,12 @@ export default function CheckoutPage() {
         if (data.clientSecret) {
           setClientSecret(data.clientSecret);
         } else {
-          setInitError(data.error || "Erro desconhecido ao comunicar com Stripe.");
-          console.error("Client Secret não encontrado", data.error);
+          setInitError(data.error || "Unknown error when communicating with Stripe.");
+          console.error("Client Secret not found", data.error);
         }
       } catch (error: any) {
-        setInitError("Erro de comunicação com o servidor.");
-        console.error("Erro ao comunicar com a API de Payment Intent", error);
+        setInitError("Server communication error.");
+        console.error("Error communicating with Payment Intent API", error);
       }
     };
 
@@ -96,7 +96,15 @@ export default function CheckoutPage() {
         }
       }
     },
-    locale: "pt-BR", // Define o idioma para os inputs do Stripe (como CC, CVC)
+    locale: "en", // Set input language for Stripe (CC, CVC)
+    customPaymentMethods: [
+      {
+        id: "cpmt_northmind",
+        options: {
+          type: "static",
+        },
+      },
+    ],
   };
 
   return (
@@ -119,15 +127,15 @@ export default function CheckoutPage() {
 
       {totalAmount <= 0 ? (
         <div className="error-state">
-          <p className="error-text">O seu carrinho está vazio.</p>
-          <p className="error-detail">Adicione produtos antes de finalizar a compra.</p>
-          <a href="/" className="retry-btn" style={{ textDecoration: 'none' }}>Voltar para a loja</a>
+          <p className="error-text">Your cart is empty.</p>
+          <p className="error-detail">Add products before completing your purchase.</p>
+          <a href="/" className="retry-btn" style={{ textDecoration: 'none' }}>Return to Boutique</a>
         </div>
       ) : initError ? (
         <div className="error-state">
-          <p className="error-text">Ocorreu um erro ao inicializar o checkout:</p>
+          <p className="error-text">An error occurred while initializing checkout:</p>
           <p className="error-detail">{initError}</p>
-          <button onClick={() => window.location.reload()} className="retry-btn">Tentar Novamente</button>
+          <button onClick={() => window.location.reload()} className="retry-btn">Try Again</button>
         </div>
       ) : clientSecret ? (
         <Elements stripe={stripePromise} options={options}>
@@ -136,7 +144,7 @@ export default function CheckoutPage() {
       ) : (
         <div className="loading-state">
           <span className="spinner"></span>
-          <p>Preparando ambiente seguro...</p>
+          <p>Preparing secure environment...</p>
         </div>
       )}
 

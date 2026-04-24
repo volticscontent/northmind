@@ -26,7 +26,7 @@ export default async function AdminDashboard() {
           Dashboard
         </h2>
         <p className="text-xs font-bold uppercase tracking-widest text-white/40">
-          Overview of your store's performance
+          Overview of your store&apos;s performance
         </p>
       </div>
 

@@ -1,9 +1,11 @@
-import { getProductsByCollection } from "@/lib/data-loader";
+import { getProductsByCollection, getCollectionByHandle } from "@/lib/data-loader";
 import { ProductCard } from "@/components/ProductCard";
 import Link from "next/link";
 import { ChevronRight } from "lucide-react";
 import { Footer } from "@/components/Footer";
 import { Metadata } from "next";
+import { notFound } from "next/navigation";
+
 
 export const dynamic = "force-dynamic";
 
@@ -23,8 +25,18 @@ interface PageProps {
 }
 
 export default async function CollectionPage({ params }: PageProps) {
-  const decodedName = decodeURIComponent(params.collection).replace(/-/g, " ");
-  const products = await getProductsByCollection(decodedName);
+  const collection = await getCollectionByHandle(params.collection);
+  // Usa o nome da coleção se existir, senão usa o próprio slug decodificado (ex: "jackets" -> "Jackets")
+  const decodedName = collection?.name ?? decodeURIComponent(params.collection).replace(/-/g, " ");
+  
+  // Tenta buscar os produtos primeiro pelo nome exato da coleção
+  let products = await getProductsByCollection(decodedName);
+  
+  // Se não encontrar nada pelo nome exato, tenta buscar pelo slug (handle)
+  // Isso resolve casos onde o slug é 'jackets' mas o nome no banco está diferente
+  if (products.length === 0 && params.collection !== decodedName) {
+    products = await getProductsByCollection(params.collection);
+  }
 
   return (
     <>
@@ -63,7 +75,7 @@ export default async function CollectionPage({ params }: PageProps) {
                 No products available.
               </h3>
               <p className="text-[#868A91] mt-2 text-sm">
-                We couldn't match any products to the collection "{decodedName}".
+                We couldn&apos;t match any products to the collection &quot;{decodedName}&quot;.
               </p>
               <Link
                 href="/"

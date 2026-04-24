@@ -188,7 +188,7 @@ export function SearchPopup({ isOpen, onClose }: SearchPopupProps) {
                           ))
                         ) : (
                           <p className="text-xs text-white/30 py-8 text-center bg-white/5 rounded-xl border border-dashed border-white/10">
-                            No products found matching "{query}"
+                            No products found matching &quot;{query}&quot;
                           </p>
                         )}
                       </div>

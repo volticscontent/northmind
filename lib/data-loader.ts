@@ -26,10 +26,12 @@ export interface Product {
 }
 
 export interface Collection {
+  id: string;
   name: string;
   handle: string;
   description?: string;
   image?: string;
+  publicado: boolean;
 }
 
 export async function getProducts(): Promise<Product[]> {
@@ -73,5 +75,18 @@ export async function getCollections(): Promise<Collection[]> {
   } catch (error) {
     console.error("getCollections fetch error:", error);
     return [];
+  }
+}
+
+// Returns the collection if found and published, null if API worked but collection not found/draft, undefined on API error
+export async function getCollectionByHandle(handle: string): Promise<Collection | null | undefined> {
+  try {
+    const res = await fetch(`${API_URL}/api/collections`, { cache: "no-store" });
+    if (!res.ok) return undefined;
+    const collections: Collection[] = await res.json();
+    const found = collections.find(c => c.handle === handle);
+    return found ?? null;
+  } catch {
+    return undefined;
   }
 }

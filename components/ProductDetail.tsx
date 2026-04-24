@@ -1,3 +1,5 @@
+"use client";
+
 import { Product } from "@/lib/data-loader";
 import Link from "next/link";
 import Image from "next/image";
@@ -181,7 +183,7 @@ export function ProductDetail({ product, allProducts, searchParams }: ProductDet
                         )}
                         {product.instrucoesCuidado && (
                           <p className="text-[11px] font-medium leading-relaxed italic border-l border-accent/20 pl-4">
-                            "{product.instrucoesCuidado}"
+                            &quot;{product.instrucoesCuidado}&quot;
                           </p>
                         )}
                       </div>

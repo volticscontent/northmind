@@ -38,6 +38,7 @@
   "exclude": [
     "node_modules",
     "backend",
+    "northmind_backend",
     "prisma",
     "check-admin.ts",
     "test-db.ts",

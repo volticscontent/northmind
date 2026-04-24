@@ -23,8 +23,8 @@ export function ProductCard({ product, priority = false, onClick }: ProductCardP
   const variants = product.variantes || [];
   const isFragrance = product.tipo === "PERFUME" || product.collection?.toLowerCase().includes("fragrance");
   
-  // Para perfumes, priorizamos o preço da variante de 100ml se disponível, 
-  // pois é a variante selecionada por padrão na página do produto.
+  // For fragrances, we prioritize the 100ml variant price if available, 
+  // as it is the default selected variant on the product page.
   const defaultVariant = isFragrance 
     ? variants.find((v: any) => v.label === "100ml" || v.name === "100ml")
     : null;

@@ -159,7 +159,7 @@ export async function getCollections() {
   const session = await getServerSession(authOptions);
   if ((session?.user as any)?.type !== "ADMIN") throw new Error("Unauthorized Admin Only");
 
-  const res = await fetch(`${API_URL}/api/collections`, {
+  const res = await fetch(`${API_URL}/api/collections/raw`, {
     cache: "no-store",
     headers: {
       Authorization: `Bearer ${(session?.user as any)?.token}`,
@@ -223,6 +223,25 @@ export async function setCollectionStatus(collectionName: string, publicado: boo
 
   if (!res.ok) throw new Error("Failed to update collection status");
   revalidatePath("/admin/products");
+  revalidatePath("/");
+}
+
+export async function setCollectionDraft(id: string, publicado: boolean) {
+  const session = await getServerSession(authOptions);
+  if ((session?.user as any)?.type !== "ADMIN") throw new Error("Unauthorized Admin Only");
+
+  const res = await fetch(`${API_URL}/api/collections/set-draft`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${(session?.user as any)?.token}`,
+    },
+    body: JSON.stringify({ id, publicado }),
+  });
+
+  if (!res.ok) throw new Error("Failed to update collection draft status");
+  revalidatePath("/admin/collections");
+  revalidatePath("/collections");
   revalidatePath("/");
 }
 

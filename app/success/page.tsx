@@ -86,7 +86,7 @@ function SuccessContent() {
     }
 
     processTracking();
-  }, [paymentIntentId, searchParams]);
+  }, [paymentIntentId, searchParams, orderId, userId]);
 
   return (
     <div className="success-container">

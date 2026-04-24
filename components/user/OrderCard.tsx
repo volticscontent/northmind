@@ -4,7 +4,7 @@ import { useState } from "react";
 import { ChevronDown, Package, Clock } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
-// Definindo o mínimo necessário para a interface entender o que entra
+// Defining the minimum necessary for the interface to understand input
 interface ProductSnippet {
   id: string;
   nome: string;
@@ -20,19 +20,18 @@ interface OrderCardProps {
     totalAmmount: number;
     produtosIds: string[];
   };
-  productsDict: Record<string, ProductSnippet>; // Dicionário dos produtos ({ "id_123": {...dados} })
+  productsDict: Record<string, ProductSnippet>; // Product dictionary ({ "id_123": {...data} })
 }
 
 export function OrderCard({ pedido, productsDict }: OrderCardProps) {
   const [isExpanded, setIsExpanded] = useState(false);
 
-  // Mapear os produtos do pedido usando o dicionário
+  // Map order products using the dictionary
   const orderProducts = pedido.produtosIds
     .map(id => productsDict[id])
-    .filter(Boolean); // Remover nulos caso um produto tenha sido deletado do banco central
+    .filter(Boolean); // Remove nulls in case a product was deleted from central database
 
-  // Contar quantas unidades de cada produto tem no pedido (caso 2 produtos iguais no array)
-  // Como simplificação visual, agrupamos pela chave:
+  // As a visual simplification, we group by key:
   const productCounts = orderProducts.reduce((acc, prod) => {
     if (!acc[prod.id]) {
       acc[prod.id] = { product: prod, count: 0 };
@@ -45,7 +44,7 @@ export function OrderCard({ pedido, productsDict }: OrderCardProps) {
 
   return (
     <div className="bg-white/[0.03] border border-white/5 rounded-3xl overflow-hidden hover:bg-white/[0.04] transition-all group/card">
-      {/* HEADER CLICÁVEL DO PEDIDO */}
+      {/* CLICKABLE ORDER HEADER */}
       <button 
         onClick={() => setIsExpanded(!isExpanded)}
         className="w-full flex flex-col md:flex-row md:items-center justify-between gap-6 p-6 text-left"
@@ -89,7 +88,7 @@ export function OrderCard({ pedido, productsDict }: OrderCardProps) {
         </div>
       </button>
 
-      {/* ÁREA EXPANSÍVEL (ACCORDION) */}
+      {/* EXPANDABLE AREA (ACCORDION) */}
       <AnimatePresence>
         {isExpanded && (
           <motion.div
@@ -107,7 +106,7 @@ export function OrderCard({ pedido, productsDict }: OrderCardProps) {
                 {uniqueItems.map(({ product, count }) => (
                   <div key={product.id} className="flex items-center justify-between group/item hover:bg-white/[0.02] p-2 rounded-2xl transition-all">
                     <div className="flex items-center gap-4">
-                      {/* FOTO MINIATURA */}
+                      {/* THUMBNAIL PHOTO */}
                       <div className="relative w-16 h-16 rounded-xl overflow-hidden bg-white/5 border border-white/5 flex-shrink-0">
                         {product.fotos[0] ? (
                           <img 

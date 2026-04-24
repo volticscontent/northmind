@@ -1,0 +1,200 @@
+{
+  "main": {
+    "id": "70d1f75bc27a6d88",
+    "type": "split",
+    "children": [
+      {
+        "id": "6c6216484fd73f7d",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "d7bc59fbb77ca0e9",
+            "type": "leaf",
+            "state": {
+              "type": "canvas",
+              "state": {
+                "file": "tracking.canvas",
+                "viewState": {
+                  "x": 731,
+                  "y": 651,
+                  "zoom": 0
+                }
+              },
+              "icon": "lucide-layout-dashboard",
+              "title": "tracking"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "vertical"
+  },
+  "left": {
+    "id": "dc8c35f431ad1d3e",
+    "type": "split",
+    "children": [
+      {
+        "id": "335a4fc5400dd597",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "2cdc14325a5e9fba",
+            "type": "leaf",
+            "state": {
+              "type": "file-explorer",
+              "state": {
+                "sortOrder": "alphabetical",
+                "autoReveal": false
+              },
+              "icon": "lucide-folder-closed",
+              "title": "Explorador de arquivos"
+            }
+          },
+          {
+            "id": "a6b81b2096b7a114",
+            "type": "leaf",
+            "state": {
+              "type": "search",
+              "state": {
+                "query": "",
+                "matchingCase": false,
+                "explainSearch": false,
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical"
+              },
+              "icon": "lucide-search",
+              "title": "Procurar"
+            }
+          },
+          {
+            "id": "1a67ad1a280a88c5",
+            "type": "leaf",
+            "state": {
+              "type": "bookmarks",
+              "state": {},
+              "icon": "lucide-bookmark",
+              "title": "Marcadores"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 300
+  },
+  "right": {
+    "id": "2f7d08b16555ca31",
+    "type": "split",
+    "children": [
+      {
+        "id": "f0403d0ea80be550",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "b1034808d1d553a4",
+            "type": "leaf",
+            "state": {
+              "type": "backlink",
+              "state": {
+                "file": "tracking.canvas",
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical",
+                "showSearch": false,
+                "searchQuery": "",
+                "backlinkCollapsed": false,
+                "unlinkedCollapsed": true
+              },
+              "icon": "links-coming-in",
+              "title": "Links inversos para tracking"
+            }
+          },
+          {
+            "id": "8e2d2f1b10885801",
+            "type": "leaf",
+            "state": {
+              "type": "outgoing-link",
+              "state": {
+                "file": "tracking.canvas",
+                "linksCollapsed": false,
+                "unlinkedCollapsed": true
+              },
+              "icon": "links-going-out",
+              "title": "Links de saída para tracking"
+            }
+          },
+          {
+            "id": "be03fefd2dddf5de",
+            "type": "leaf",
+            "state": {
+              "type": "tag",
+              "state": {
+                "sortOrder": "frequency",
+                "useHierarchy": true,
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-tags",
+              "title": "Etiquetas"
+            }
+          },
+          {
+            "id": "beb0edf965fd90b4",
+            "type": "leaf",
+            "state": {
+              "type": "all-properties",
+              "state": {
+                "sortOrder": "frequency",
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-archive",
+              "title": "Todas as propriedades"
+            }
+          },
+          {
+            "id": "d23d66c70917d359",
+            "type": "leaf",
+            "state": {
+              "type": "outline",
+              "state": {
+                "file": "tracking.canvas",
+                "followCursor": false,
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-list",
+              "title": "Sumário de tracking"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 300,
+    "collapsed": true
+  },
+  "left-ribbon": {
+    "hiddenItems": {
+      "switcher:Abrir a troca rápida": false,
+      "graph:Abrir visualização em gráfico": false,
+      "canvas:Criar novo canvas": false,
+      "daily-notes:Abrir a nota de hoje": false,
+      "templates:Inserir modelo": false,
+      "command-palette:Abrir paleta de comandos": false,
+      "bases:Criar nova base": false
+    }
+  },
+  "active": "d7bc59fbb77ca0e9",
+  "lastOpenFiles": [
+    "wiki/integrations/northmind-store.md",
+    "wiki/architecture/northmind-repo.md",
+    "wiki/architecture",
+    "raw/docs/2026-04-23-northmind-repo.md",
+    "wiki/index.md",
+    "wiki/log.md",
+    "wiki/overview.md",
+    "tracking.canvas"
+  ]
+}

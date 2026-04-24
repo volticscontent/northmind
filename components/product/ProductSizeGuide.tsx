@@ -99,7 +99,7 @@ export function ProductSizeGuide({ isOpen, onClose, guide }: ProductSizeGuidePro
 
           <footer className="pt-12 border-t border-white/5">
             <p className="text-[10px] font-medium italic text-white/20">
-              * Measurements are in centimeters. Fit may vary slightly depending on the collection's silhouette.
+              * Measurements are in centimeters. Fit may vary slightly depending on the collection&apos;s silhouette.
             </p>
           </footer>
         </div>
