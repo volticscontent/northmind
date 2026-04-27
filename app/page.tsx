@@ -1,0 +1,69 @@
+import { Header } from "@/components/Header";
+import { Hero } from "@/components/Hero";
+import { ScrollingText } from "@/components/effects/mobile/ScrollingText";
+import { ProductCarousel } from "@/components/product/ProductCarousel";
+import { Footer } from "@/components/Footer";
+import { VideoSection } from "@/components/VideoSection";
+import { getCollections, getProductsByCollection } from "@/lib/data-loader";
+
+export const dynamic = "force-dynamic";
+
+export default async function Home() {
+  const collections = await getCollections();
+
+  // Sort collections to put Fragrances/Fragrance first
+  const sortedCollections = [...collections].sort((a, b) => {
+    if (a.name.toLowerCase().includes('3x1 fragrances')) return -1;
+    if (b.name.toLowerCase().includes('3x1 fragrances')) return 1;
+    return 0;
+  });
+
+  // Fetch products for all collections
+  const collectionsWithProducts = await Promise.all(
+    sortedCollections.map(async (c) => {
+      const products = await getProductsByCollection(c.name);
+      return { ...c, products };
+    })
+  );
+
+  const orderedCollections =
+    collectionsWithProducts.length >= 4
+      ? [
+          ...collectionsWithProducts.slice(2, 4),
+          ...collectionsWithProducts.slice(0, 2),
+          ...collectionsWithProducts.slice(4),
+        ]
+      : collectionsWithProducts;
+
+  return (
+    <main className="min-h-screen bg-black" suppressHydrationWarning>
+      <Header />
+      <Hero />
+      <ScrollingText />
+
+      <div id="collections" className="space-y-0">
+        {orderedCollections.map((c) => (
+          <div key={c.handle}>
+            <ProductCarousel
+              title={c.name}
+              collection={c.name}
+              products={c.products}
+            />
+          </div>
+        ))}
+
+        {/* TODO: Seção desativada porque os cards de coleção (react-bits carousel) estão sem fotos e desatualizados */}
+        {/* <VideoSection collections={collections} /> */}
+
+        {/* If no collections found, show a fallback space */}
+        {orderedCollections.length === 0 && (
+          <div className="py-20 text-center text-white/20 uppercase tracking-luxury">
+            Discovering our heritage...
+          </div>
+        )}
+      </div>
+
+      <Footer />
+    </main>
+  );
+}
