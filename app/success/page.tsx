@@ -19,10 +19,8 @@ function SuccessContent() {
   const dataRef = React.useRef(false); // Ref to avoid double tracking trigger
 
   React.useEffect(() => {
-    console.log("✅ Success Page Loaded. PI ID:", paymentIntentId);
     
     if (!paymentIntentId || dataRef.current) {
-      if (dataRef.current) console.log("ℹ️ Tracking already processed for this session.");
       return;
     }
     
@@ -39,17 +37,14 @@ function SuccessContent() {
              localStorage.getItem('success-id')) 
           : null;
 
-        console.log("🚀 SUCCESS_PAGE: Notifying Backend for UTMify Tracking...");
         
         const axios = (await import("axios")).default;
-        const { API_URL } = await import("@/lib/api");
         
         if (paymentIntentId) {
-          const response = await axios.post(`${API_URL}/api/payment/track-purchase`, {
+          const response = await axios.post(`/api/payment/track-purchase`, {
             intentId: paymentIntentId,
             utmifyIdManual: utmifyId
           });
-          console.log("📊 BACKEND_RESPONSE:", response.data);
           
           if (response.data.success) {
             const { trackPurchase, trackUtmfyPurchase } = await import("@/lib/tracking");
@@ -68,12 +63,12 @@ function SuccessContent() {
           }
         }
 
-        // --- 2. ORDER VERIFICATION (PASSWORD FORM) ---
+        // --- 2. ORDER VERIFICATION (PASSWORD FORM) VIA SERVER ACTION ---
         if (orderId && userId) {
-          const res = await fetch(`${API_URL}/api/admin/verify-order/${orderId}/${userId}`);
-          if (res.ok) {
-            const userData = await res.json();
-            setEmail(userData.email);
+          const { verifyOrder } = await import("./actions");
+          const userData = await verifyOrder(orderId, userId);
+          if (userData) {
+            setEmail(userData.email || "");
             setHasPassword(userData.hasPassword);
           }
         }

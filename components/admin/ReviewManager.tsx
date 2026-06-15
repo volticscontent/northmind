@@ -1,13 +1,16 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { 
-  Star, Trash2, Edit2, X, Save, 
-  MessageSquare, Film, Image as ImageIcon, 
-  Filter, Search, Loader2, CheckCircle2
+import {
+  Star, Trash2, Edit2, X, Save,
+  MessageSquare, Film, Image as ImageIcon,
+  Search, Loader2, CheckCircle2, CheckCircle, XCircle
 } from "lucide-react";
 import { getAdminReviews, updateReview, deleteReview } from "@/lib/actions";
 import { MediaUpload } from "./MediaUpload";
+
+type Toast = { type: "success" | "error"; msg: string };
+type ConfirmModal = { message: string; onConfirm: () => void } | null;
 
 export function ReviewManager() {
   const [reviews, setReviews] = useState<any[]>([]);
@@ -15,6 +18,15 @@ export function ReviewManager() {
   const [searchTerm, setSearchTerm] = useState("");
   const [editingReview, setEditingReview] = useState<any | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [toast, setToast] = useState<Toast | null>(null);
+  const [confirmModal, setConfirmModal] = useState<ConfirmModal>(null);
+
+  const showToast = (type: Toast["type"], msg: string) => {
+    setToast({ type, msg });
+    setTimeout(() => setToast(null), 3000);
+  };
+  const showConfirm = (message: string, onConfirm: () => void) =>
+    setConfirmModal({ message, onConfirm });
 
   useEffect(() => {
     fetchReviews();
@@ -35,26 +47,30 @@ export function ReviewManager() {
         texto: editingReview.texto,
         rating: editingReview.rating,
         fotos: editingReview.fotos,
-        videoUrl: editingReview.videoUrl
+        videoUrl: editingReview.videoUrl,
       });
       setEditingReview(null);
+      showToast("success", "Review updated.");
       await fetchReviews();
     } catch (err) {
       console.error(err);
-      alert("Error updating review");
+      showToast("error", "Error updating review.");
     } finally {
       setIsSubmitting(false);
     }
   }
 
-  async function handleDelete(id: string) {
-    if (!confirm("Delete this review forever?")) return;
-    try {
-      await deleteReview(id);
-      await fetchReviews();
-    } catch (err) {
-      console.error(err);
-    }
+  function handleDelete(id: string) {
+    showConfirm("Delete this review forever?", async () => {
+      try {
+        await deleteReview(id);
+        showToast("success", "Review deleted.");
+        await fetchReviews();
+      } catch (err) {
+        console.error(err);
+        showToast("error", "Error deleting review.");
+      }
+    });
   }
 
   const filteredReviews = reviews.filter(r => 
@@ -73,7 +89,42 @@ export function ReviewManager() {
   }
 
   return (
-    <div className="space-y-10 animate-in fade-in duration-700">
+    <div className="space-y-10 animate-in fade-in duration-700 relative">
+      {/* Toast */}
+      {toast && (
+        <div
+          className={`fixed bottom-6 right-6 z-50 flex items-center gap-3 px-5 py-3.5 rounded-2xl shadow-2xl text-xs font-black uppercase tracking-widest animate-in slide-in-from-bottom-4 duration-300 ${
+            toast.type === "success" ? "bg-emerald-500 text-black" : "bg-rose-500 text-white"
+          }`}
+        >
+          {toast.type === "success" ? <CheckCircle size={16} /> : <XCircle size={16} />}
+          {toast.msg}
+        </div>
+      )}
+
+      {/* Confirm Modal */}
+      {confirmModal && (
+        <div className="fixed inset-0 z-[400] bg-black/70 backdrop-blur-sm flex items-center justify-center p-6">
+          <div className="bg-[#0a0a0a] border border-white/10 rounded-3xl p-8 max-w-sm w-full shadow-2xl">
+            <p className="text-sm text-white/80 leading-relaxed mb-6">{confirmModal.message}</p>
+            <div className="flex gap-3">
+              <button
+                onClick={() => setConfirmModal(null)}
+                className="flex-1 px-4 py-3 text-[10px] font-black uppercase tracking-widest text-white/40 bg-white/5 rounded-xl hover:bg-white/10 transition-all"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => { confirmModal.onConfirm(); setConfirmModal(null); }}
+                className="flex-1 px-4 py-3 text-[10px] font-black uppercase tracking-widest text-white bg-rose-500 rounded-xl hover:bg-rose-600 transition-all"
+              >
+                Confirm
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="flex items-center justify-between pb-8 border-b border-white/5">
         <div className="space-y-1">
           <h2 className="text-2xl font-black uppercase tracking-tighter text-white">Social Proof Hub</h2>

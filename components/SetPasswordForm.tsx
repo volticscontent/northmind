@@ -25,7 +25,7 @@ export function SetPasswordForm({ userId, orderId, email }: { userId: string, or
     setError("");
 
     try {
-      const response = await fetch(`${API_URL}/api/auth/set-password`, {
+      const response = await fetch(`/api/auth/set-password`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ userId, orderId, password }),

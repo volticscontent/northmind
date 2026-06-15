@@ -3,16 +3,18 @@
 import Image from "next/image";
 import Link from "next/link";
 import { Product } from "@/lib/data-loader";
-import { Star } from "lucide-react";
+import { Star, Plus } from "lucide-react";
 import { useState } from "react";
+import { motion } from "framer-motion";
 
 interface ProductCardProps {
   product: Product;
   priority?: boolean;
   onClick?: (product: Product) => void;
+  index?: number;
 }
 
-export function ProductCard({ product, priority = false, onClick }: ProductCardProps) {
+export function ProductCard({ product, priority = false, onClick, index = 0 }: ProductCardProps) {
   const [isHovered, setIsHovered] = useState(false);
 
   const discount = Math.round(
@@ -40,21 +42,18 @@ export function ProductCard({ product, priority = false, onClick }: ProductCardP
   const content = (
     <>
       <div
-        className="relative w-full overflow-hidden bg-[#F2F2F2] flex items-center justify-center group"
-        style={{
-          aspectRatio: (product.collection?.toLowerCase().includes('fragrance') || product.collection?.toLowerCase().includes('offer'))
-            ? '1/1'
-            : '4/5'
-        }}
+        className={`relative w-full overflow-hidden ${isFragrance ? 'bg-[#F2F2F2]' : 'bg-[#050505]'} flex items-center justify-center group`}
+        style={{ aspectRatio: '4/5' }}
       >
         {/* Main Image */}
         <Image
           src={product.images[0]}
           alt={product.title}
           fill
+          quality={80}
           priority={priority}
           sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 25vw"
-          className={`object-cover transition-all duration-1000 ease-in-out ${isHovered && product.images[1] ? 'opacity-0 scale-105' : 'opacity-100 scale-100'}`}
+          className={`object-cover transition-transform duration-1000 ease-in-out ${isHovered && product.images[1] ? 'opacity-0 scale-105' : 'opacity-100 scale-100'}`}
         />
 
         {/* Hover Image (Secondary) */}
@@ -63,8 +62,9 @@ export function ProductCard({ product, priority = false, onClick }: ProductCardP
             src={product.images[1]}
             alt={`${product.title} alternate view`}
             fill
+            quality={80}
             sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 25vw"
-            className={`object-cover transition-all duration-1000 ease-in-out absolute inset-0 ${isHovered ? 'opacity-100 scale-100' : 'opacity-0 scale-110'}`}
+            className={`object-cover transition-transform duration-1000 ease-in-out absolute inset-0 ${isHovered ? 'opacity-100 scale-100' : 'opacity-0 scale-110'}`}
           />
         )}
 
@@ -74,23 +74,17 @@ export function ProductCard({ product, priority = false, onClick }: ProductCardP
           </div>
         )}
 
-        {/* Quick Size Overlay on Hover */}
-        <div className={`absolute bottom-0 inset-x-0 bg-white/95 backdrop-blur-sm p-3 translate-y-full transition-transform duration-500 flex flex-wrap gap-1 justify-center ${isHovered ? 'translate-y-0' : ''}`}>
-          <span className="text-[8px] font-black uppercase tracking-widest text-black/40 w-full text-center mb-1">Available Sizes</span>
-          {((product.tipo === "PERFUME" || product.collection?.toLowerCase().includes("fragrance"))
-            ? ["100ml"]
-            : (product.opcoesTamanho && product.opcoesTamanho.length > 0 ? product.opcoesTamanho : ["S", "M", "L", "XL", "XXL"])
-          ).slice(0, 5).map(size => (
-            <span key={size} className="text-[9px] font-bold border border-black/10 px-1.5 py-0.5 rounded text-black/70">
-              {size}
-            </span>
-          ))}
+        {/* Quick Add Overlay on Hover */}
+        <div className={`absolute bottom-4 inset-x-4 flex items-center justify-center translate-y-[150%] opacity-0 transition-all duration-500 ${isHovered ? 'translate-y-0 opacity-100' : ''}`}>
+          <button className="w-full bg-white/10 backdrop-blur-md border border-white/20 text-white text-[10px] font-bold uppercase tracking-widest py-3 flex items-center justify-center gap-2 hover:bg-white hover:text-black transition-colors duration-300">
+            <Plus size={14} /> Quick View
+          </button>
         </div>
       </div>
 
-      <div className="flex flex-col p-2 pb-4 flex-grow md:p-5 border-black bg-white">
+      <div className="flex flex-col p-4 flex-grow bg-[#0a0a09] border-t border-white/5">
         <div className="flex justify-between items-start mb-1">
-          <h3 className="text-[10px] md:text-[11px] font-extrabold uppercase tracking-luxury text-black truncate flex-grow">
+          <h3 className="text-[10px] md:text-[11px] font-extrabold uppercase tracking-luxury text-white truncate flex-grow">
             {product.title}
           </h3>
           {/* Color Dots */}
@@ -98,7 +92,7 @@ export function ProductCard({ product, priority = false, onClick }: ProductCardP
             {product.opcoesCor?.slice(0, 3).map((color, i) => (
               <div
                 key={i}
-                className="w-2.5 h-2.5 rounded-full border border-black/10"
+                className="w-2.5 h-2.5 rounded-full border border-white/20"
                 style={{ backgroundColor: color.hex }}
                 title={color.name}
               />
@@ -106,7 +100,7 @@ export function ProductCard({ product, priority = false, onClick }: ProductCardP
           </div>
         </div>
 
-        <p className="text-[9px] md:text-[10px] font-medium uppercase tracking-widest text-black/40 mb-3">
+        <p className="text-[9px] md:text-[10px] font-medium uppercase tracking-widest text-white/40 mb-3">
           {product.collection}
         </p>
 
@@ -117,19 +111,19 @@ export function ProductCard({ product, priority = false, onClick }: ProductCardP
               <Star
                 key={s}
                 size={10}
-                className={`${s <= Math.round(rating) ? "fill-accent text-accent" : "text-black/10"}`}
+                className={`${s <= Math.round(rating) ? "fill-accent text-accent" : "text-white/10"}`}
                 strokeWidth={1.5}
               />
             ))}
           </div>
-          <span className="text-[9px] font-bold text-black/30 uppercase tracking-widest">
+          <span className="text-[9px] font-bold text-white/30 uppercase tracking-widest">
             ({totalReviews})
           </span>
         </div>
 
         <div className="mt-auto space-y-1">
           {discount > 0 && (
-            <span className="text-[11px] md:text-sm text-black/40 line-through font-medium">
+            <span className="text-[11px] md:text-sm text-white/40 line-through font-medium">
               £{product.originalPrice.toFixed(2)}
             </span>
           )}
@@ -137,7 +131,7 @@ export function ProductCard({ product, priority = false, onClick }: ProductCardP
             {hasPriceVariation && (
               <span className="text-[9px] text-accent font-black uppercase tracking-widest italic">From</span>
             )}
-            <span className="text-base md:text-xl font-black text-black tracking-tight">
+            <span className="text-base md:text-xl font-black text-white tracking-tight">
               £{minPrice.toFixed(2)}
             </span>
           </div>
@@ -146,29 +140,39 @@ export function ProductCard({ product, priority = false, onClick }: ProductCardP
     </>
   );
 
-  const baseClassName = "group flex flex-col bg-white overflow-hidden transition-all duration-700 hover:shadow-[0_20px_50px_rgba(0,0,0,0.1)] no-underline cursor-pointer border border-black/5";
+  const baseClassName = "group flex flex-col overflow-hidden transition-all duration-700 hover:shadow-[0_20px_50px_rgba(255,255,255,0.03)] no-underline cursor-pointer border border-white/5 bg-[#0a0a09]";
 
   if (onClick) {
     return (
-      <div
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, delay: index * 0.1, ease: [0.25, 0.46, 0.45, 0.94] }}
         onClick={() => onClick(product)}
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
         className={baseClassName}
       >
         {content}
-      </div>
+      </motion.div>
     );
   }
 
   return (
-    <Link
-      href={`/product/${product.handle}`}
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
-      className={baseClassName}
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5, delay: index * 0.1, ease: [0.25, 0.46, 0.45, 0.94] }}
+      className="h-full"
     >
-      {content}
-    </Link>
+      <Link
+        href={`/product/${product.handle}`}
+        onMouseEnter={() => setIsHovered(true)}
+        onMouseLeave={() => setIsHovered(false)}
+        className={`${baseClassName} h-full`}
+      >
+        {content}
+      </Link>
+    </motion.div>
   );
 }

@@ -5,7 +5,7 @@ import { Search, X, ArrowRight } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
 import Image from "next/image";
-import { getProducts, getCollections, Product, Collection } from "@/lib/data-loader";
+import { fetchAllForSearch } from "@/lib/search-actions";
 
 interface SearchPopupProps {
   isOpen: boolean;
@@ -14,8 +14,8 @@ interface SearchPopupProps {
 
 export function SearchPopup({ isOpen, onClose }: SearchPopupProps) {
   const [query, setQuery] = useState("");
-  const [products, setProducts] = useState<Product[]>([]);
-  const [collections, setCollections] = useState<Collection[]>([]);
+  const [products, setProducts] = useState<any[]>([]);
+  const [collections, setCollections] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const cardRef = useRef<HTMLDivElement>(null);
@@ -23,9 +23,9 @@ export function SearchPopup({ isOpen, onClose }: SearchPopupProps) {
   useEffect(() => {
     async function loadData() {
       setIsLoading(true);
-      const [pData, cData] = await Promise.all([getProducts(), getCollections()]);
-      setProducts(pData);
-      setCollections(cData);
+      const data = await fetchAllForSearch();
+      setProducts(data.products);
+      setCollections(data.collections);
       setIsLoading(false);
     }
     if (isOpen) {
@@ -120,21 +120,55 @@ export function SearchPopup({ isOpen, onClose }: SearchPopupProps) {
 
                     {/* Collections */}
                     {(query === "" || filteredCollections.length > 0) && (
-                      <div className="space-y-3">
+                      <div className="space-y-4">
                         <span className="text-[9px] uppercase tracking-[0.25em] text-white/30 font-bold">
                           Collections
                         </span>
-                        <div className="flex flex-wrap gap-2">
-                          {filteredCollections.map((c) => (
-                            <Link
-                              key={c.handle}
-                              href={`/collections/${c.handle}`}
-                              onClick={onClose}
-                              className="px-4 py-2 rounded-full border border-white/10 bg-white/5 text-[10px] font-bold uppercase tracking-widest text-white/70 hover:text-white hover:border-white/30 transition-all"
-                            >
-                              {c.name}
-                            </Link>
-                          ))}
+                        <div className="space-y-2">
+                          {filteredCollections.map((c) => {
+                            // Find products that belong to this collection
+                            const collectionProducts = products.filter(p => 
+                              p.collection && (
+                                p.collection.toLowerCase() === c.name.toLowerCase() || 
+                                p.collection.toLowerCase() === c.handle.toLowerCase()
+                              )
+                            );
+                            const productCount = collectionProducts.length;
+                            const coverImage = collectionProducts.length > 0 && collectionProducts[0].images?.length > 0 
+                              ? collectionProducts[0].images[0] 
+                              : "/assets/community/1.png"; // Fallback image
+
+                            return (
+                              <Link
+                                key={c.handle}
+                                href={`/collections/${c.handle}`}
+                                onClick={onClose}
+                                className="flex items-center gap-4 p-2 rounded-xl hover:bg-white/5 group transition-all"
+                              >
+                                <div className="relative w-16 h-16 rounded-lg overflow-hidden flex-shrink-0 bg-white border border-white/10">
+                                  <Image
+                                    src={coverImage}
+                                    alt={c.name}
+                                    fill
+                                    className="object-cover transition-transform duration-500 group-hover:scale-110"
+                                  />
+                                </div>
+                                <div className="flex-grow min-w-0">
+                                  <h4 className="text-sm font-bold text-white/90 group-hover:text-white truncate">
+                                    {c.name}
+                                  </h4>
+                                  <p className="text-[10px] uppercase tracking-luxury text-white/40 mt-1">
+                                    North Mind
+                                  </p>
+                                </div>
+                                <div className="text-right">
+                                  <span className="text-xs font-bold text-white">
+                                    {productCount} {productCount === 1 ? 'Piece' : 'Pieces'}
+                                  </span>
+                                </div>
+                              </Link>
+                            );
+                          })}
                         </div>
                       </div>
                     )}

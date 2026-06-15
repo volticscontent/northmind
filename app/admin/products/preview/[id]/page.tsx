@@ -2,9 +2,9 @@
 
 import { useEffect, useState } from "react";
 import { ProductDetail } from "@/components/ProductDetail";
-import { API_URL } from "@/lib/api";
 import { useSession } from "next-auth/react";
 import { Loader2 } from "lucide-react";
+import { fetchProductPreview, fetchAllProductsForPreview } from "./actions";
 
 export default function AdminProductPreviewPage({ params }: { params: { id: string } }) {
   const { data: session, status } = useSession();
@@ -33,27 +33,13 @@ export default function AdminProductPreviewPage({ params }: { params: { id: stri
       }
 
       try {
-        const token = (session?.user as any).token;
-        const [prodRes, allRes] = await Promise.all([
-          fetch(`${API_URL}/api/products/admin/${params.id}`, {
-            headers: { Authorization: `Bearer ${token}` },
-            cache: "no-store",
-          }),
-          fetch(`${API_URL}/api/products`, { cache: "no-store" })
+        const [prod, all] = await Promise.all([
+          fetchProductPreview(params.id),
+          fetchAllProductsForPreview()
         ]);
-
-        if (prodRes.ok) {
-          const rawProd = await prodRes.json();
-          setProduct({
-            ...rawProd,
-            title: rawProd.nome,
-            description: rawProd.descricao,
-            price: rawProd.preco,
-            originalPrice: rawProd.precoOriginal,
-            images: rawProd.fotos,
-          });
-        }
-        if (allRes.ok) setAllProducts(await allRes.json());
+        
+        if (prod) setProduct(prod);
+        if (all) setAllProducts(all);
       } catch (error) {
         console.error("Preview fetch error:", error);
       } finally {
@@ -67,13 +53,10 @@ export default function AdminProductPreviewPage({ params }: { params: { id: stri
   // LIVE STUDIO LISTENER: Listen for updates from the Parent (ProductManager)
   useEffect(() => {
     const handleMessage = (event: MessageEvent) => {
-      // Security check: only trust origin if needed, but for local admin it's fine
       if (event.data?.type === "NORTHMIND_PREVIEW_UPDATE") {
-        console.log("🚀 Live Update Received:", event.data.payload);
         setProduct((prev: any) => ({
           ...prev,
           ...event.data.payload,
-          // Map backend field names if necessary (ProductDetail expects 'title' but backend gives 'nome')
           title: event.data.payload.nome || event.data.payload.title || prev?.nome || prev?.title,
           description: event.data.payload.descricao || event.data.payload.description || prev?.descricao || prev?.description,
           price: event.data.payload.preco !== undefined ? event.data.payload.preco : prev?.preco,

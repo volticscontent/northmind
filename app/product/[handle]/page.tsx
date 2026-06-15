@@ -1,10 +1,14 @@
 import { getProductByHandle, getProducts } from "@/lib/data-loader";
+import { getReviews, canUserReview } from "@/lib/actions";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { ProductDetail } from "@/components/ProductDetail";
 import { notFound } from "next/navigation";
 import { Metadata } from "next";
 
+export const revalidate = 3600; // Revalidate every hour (ISR)
+
+// ... generateMetadata and generateStaticParams remain unchanged ...
 export async function generateMetadata({ params }: { params: { handle: string } }): Promise<Metadata> {
   const product = await getProductByHandle(params.handle);
 
@@ -16,10 +20,26 @@ export async function generateMetadata({ params }: { params: { handle: string } 
 
   return {
     title: `${product.title} | North Mind Premium Heritage`,
-    description: `Shop the ${product.title} from North Mind. ${product.collection} crafted for durability and contemporary british style.`,
+    description: `Shop the ${product.title} from North Mind. ${product.collection} crafted for durability and contemporary british style. Price: $${product.price}.`,
     openGraph: {
-      images: [product.images[0]],
+      title: `${product.title} | North Mind`,
+      description: `Crafted for durability. Discover the ${product.title}.`,
+      images: [
+        {
+          url: product.images[0],
+          width: 800,
+          height: 600,
+          alt: product.title,
+        }
+      ],
+      type: "website",
     },
+    twitter: {
+      card: "summary_large_image",
+      title: product.title,
+      description: `Shop the ${product.title} at North Mind.`,
+      images: [product.images[0]],
+    }
   };
 }
 
@@ -38,12 +58,18 @@ export default async function ProductPage({
   searchParams?: { [key: string]: string | string[] | undefined };
 }) {
   const product = await getProductByHandle(params.handle);
-  const products = await getProducts();
-  const allProducts = products.filter(p => p.handle !== params.handle);
-
+  
   if (!product) {
     notFound();
   }
+
+  const products = await getProducts();
+  const allProducts = products.filter(p => p.handle !== params.handle);
+
+  const [initialReviews, canReviewInitially] = await Promise.all([
+    getReviews(product.id),
+    canUserReview(product.id)
+  ]);
 
   return (
     <main className="min-h-screen bg-black">
@@ -52,6 +78,8 @@ export default async function ProductPage({
         product={product} 
         allProducts={allProducts} 
         searchParams={searchParams} 
+        initialReviews={initialReviews}
+        canReviewInitially={canReviewInitially}
       />
       <Footer />
     </main>

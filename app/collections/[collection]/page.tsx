@@ -7,14 +7,25 @@ import { Metadata } from "next";
 import { notFound } from "next/navigation";
 
 
-export const dynamic = "force-dynamic";
+export const revalidate = 3600; // ISR cache por 1 hora
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
-  const decodedName = decodeURIComponent(params.collection).replace(/-/g, " ");
+  const collection = await getCollectionByHandle(params.collection);
+  const decodedName = collection?.name ?? decodeURIComponent(params.collection).replace(/-/g, " ");
 
   return {
     title: `${decodedName.toUpperCase()} Collection | North Mind`,
     description: `Explore our premium ${decodedName} collection. British heritage craftsmanship for the modern man.`,
+    openGraph: {
+      title: `${decodedName.toUpperCase()} | North Mind`,
+      description: `Explore the exclusive ${decodedName} collection by North Mind.`,
+      type: "website",
+    },
+    twitter: {
+      card: "summary",
+      title: `${decodedName.toUpperCase()} Collection`,
+      description: `Premium ${decodedName} from North Mind.`,
+    }
   };
 }
 
@@ -65,8 +76,8 @@ export default async function CollectionPage({ params }: PageProps) {
 
           {products.length > 0 ? (
             <div className="grid grid-cols-2 md:grid-cols-4 gap-1">
-              {products.map((product) => (
-                <ProductCard key={product.id} product={product} />
+              {products.map((product, index) => (
+                <ProductCard key={product.id} product={product} index={index} />
               ))}
             </div>
           ) : (

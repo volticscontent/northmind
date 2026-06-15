@@ -2,7 +2,7 @@
 
 ## Fonte
 - URL: https://www.northmind.store/
-- Raw: knowledge-base/raw/docs/2026-04-23-northmind-store.md
+- Raw: raw/docs/2026-04-23-northmind-store.md
 - Ingested at (UTC): 2026-04-23 22:49
 
 ## Snapshot

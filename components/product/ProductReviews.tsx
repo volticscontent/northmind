@@ -7,27 +7,23 @@ import { getReviews, canUserReview, addReview } from "@/lib/actions";
 
 interface ProductReviewsProps {
   produtoId: string;
+  initialReviews?: any[];
+  canReviewInitially?: boolean;
 }
 
-export function ProductReviews({ produtoId }: ProductReviewsProps) {
-  const [reviews, setReviews] = useState<any[]>([]);
-  const [canReview, setCanReview] = useState(false);
+export function ProductReviews({ 
+  produtoId, 
+  initialReviews = [], 
+  canReviewInitially = false 
+}: ProductReviewsProps) {
+  const [reviews, setReviews] = useState<any[]>(initialReviews);
+  const [canReview, setCanReview] = useState(canReviewInitially);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [rating, setRating] = useState(5);
   const [comment, setComment] = useState("");
   const [showForm, setShowForm] = useState(false);
 
-  useEffect(() => {
-    const fetchData = async () => {
-      const [r, allowed] = await Promise.all([
-        getReviews(produtoId),
-        canUserReview(produtoId)
-      ]);
-      setReviews(r);
-      setCanReview(allowed);
-    };
-    fetchData();
-  }, [produtoId]);
+  // useEffect for initial fetch is removed because data comes from SSR now.
 
   // Calculate review statistics
   const stats = useMemo(() => {
@@ -70,10 +66,10 @@ export function ProductReviews({ produtoId }: ProductReviewsProps) {
       <div className="grid grid-cols-1 md:grid-cols-12 gap-4 items-center">
         <div className="md:col-span-5 space-y-6">
           <div className="space-y-2">
-            <h2 className="text-2xl font-black text-white uppercase tracking-tighter">
+            <h2 className="text-xl md:text-2xl font-bold text-white uppercase tracking-tight">
               Verified Experience
             </h2>
-            <p className="text-[10px] font-bold text-white/40 uppercase tracking-[0.2em]">
+            <p className="text-[10px] font-medium text-white/50 uppercase tracking-[0.2em]">
               Real feedback from our global community
             </p>
           </div>
@@ -109,17 +105,17 @@ export function ProductReviews({ produtoId }: ProductReviewsProps) {
           )}
         </div>
 
-        <div className="md:col-span-7 space-y-3 bg-black p-8 rounded-3xl border border-white/5">
+        <div className="md:col-span-7 space-y-4 bg-white/[0.02] p-6 md:p-8 rounded-2xl border border-white/5">
           {stats ? (
             stats.counts.map((count, i) => {
               const stars = 5 - i;
               const percentage = (count / stats.total) * 100;
               return (
                 <div key={stars} className="flex items-center gap-4 group">
-                  <span className="w-4 text-[10px] font-black text-white/90 group-hover:text-white transition-colors">
+                  <span className="w-4 text-xs font-medium text-white/60 group-hover:text-white transition-colors">
                     {stars}
                   </span>
-                  <div className="flex-grow h-1.5 bg-white/10 rounded-full overflow-hidden">
+                  <div className="flex-grow h-1 bg-white/[0.05] rounded-full overflow-hidden">
                     <motion.div
                       initial={{ width: 0 }}
                       animate={{ width: `${percentage}%` }}

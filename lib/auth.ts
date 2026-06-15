@@ -1,11 +1,12 @@
 import { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
+import bcrypt from "bcrypt";
+import prisma from "./prisma";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
+// Backend URL removida, autenticação acontece internamente via Prisma
 
 export const authOptions: NextAuthOptions = {
   providers: [
-    // Provedor de credenciais para Administradores
     CredentialsProvider({
       id: "admin-credentials",
       name: "Admin Credentials",
@@ -17,26 +18,26 @@ export const authOptions: NextAuthOptions = {
         if (!credentials?.email || !credentials?.password) {
           throw new Error("Credenciais inválidas");
         }
-        try {
-          const res = await fetch(`${API_URL}/api/auth/admin/login`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(credentials),
-          });
-          const data = await res.json();
-          if (!res.ok || !data.user) {
-            throw new Error(data.error || "Falha na autenticação do admin");
-          }
-          return {
-            id: data.user.id,
-            name: data.user.name,
-            email: data.user.email,
-            type: data.user.type,
-            accessToken: data.token,
-          };
-        } catch (error: any) {
-          throw new Error(error.message || "Erro ao autenticar admin");
+        const admin = await prisma.admin.findUnique({
+          where: { email: credentials.email },
+        });
+        if (!admin || !admin.hashedPassword) {
+          throw new Error("Falha na autenticação do admin");
         }
+        const isCorrectPassword = await bcrypt.compare(
+          credentials.password,
+          admin.hashedPassword
+        );
+        if (!isCorrectPassword) {
+          throw new Error("Credenciais inválidas");
+        }
+        return {
+          id: admin.id,
+          name: admin.name,
+          email: admin.email,
+          type: "ADMIN",
+          accessToken: null,
+        };
       },
     }),
     // Provedor de credenciais para Usuários
@@ -51,26 +52,26 @@ export const authOptions: NextAuthOptions = {
         if (!credentials?.email || !credentials?.password) {
           throw new Error("Credenciais inválidas");
         }
-        try {
-          const res = await fetch(`${API_URL}/api/auth/login`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(credentials),
-          });
-          const data = await res.json();
-          if (!res.ok || !data.user) {
-            throw new Error(data.error || "Credenciais inválidas");
-          }
-          return {
-            id: data.user.id,
-            name: data.user.name,
-            email: data.user.email,
-            type: data.user.type,
-            accessToken: data.token,
-          };
-        } catch (error: any) {
-          throw new Error(error.message || "Erro ao autenticar");
+        const user = await prisma.user.findUnique({
+          where: { email: credentials.email },
+        });
+        if (!user || !user.hashedPassword) {
+          throw new Error("Credenciais inválidas");
         }
+        const isCorrectPassword = await bcrypt.compare(
+          credentials.password,
+          user.hashedPassword
+        );
+        if (!isCorrectPassword) {
+          throw new Error("Credenciais inválidas");
+        }
+        return {
+          id: user.id,
+          name: user.name,
+          email: user.email,
+          type: "USER",
+          accessToken: null,
+        };
       },
     }),
   ],

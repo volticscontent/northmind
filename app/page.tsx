@@ -1,14 +1,17 @@
 import { Header } from "@/components/Header";
 import { Hero } from "@/components/Hero";
-import { ScrollingText } from "@/components/effects/mobile/ScrollingText";
-import { ProductCarousel } from "@/components/product/ProductCarousel";
-import { Footer } from "@/components/Footer";
-import { VideoSection } from "@/components/VideoSection";
+import dynamic from "next/dynamic";
+import { Suspense } from "react";
 import { getCollections, getProductsByCollection } from "@/lib/data-loader";
 
-export const dynamic = "force-dynamic";
+// Lazy loading components below the fold
+const ProductCarousel = dynamic(() => import("@/components/product/ProductCarousel").then(mod => mod.ProductCarousel), { ssr: true });
+const Footer = dynamic(() => import("@/components/Footer").then(mod => mod.Footer), { ssr: true });
+const ScrollingText = dynamic(() => import("@/components/effects/mobile/ScrollingText").then(mod => mod.ScrollingText), { ssr: true });
 
-export default async function Home() {
+export const revalidate = 3600; // Cache de 1 hora para a home
+
+async function HomeCollections() {
   const collections = await getCollections();
 
   // Sort collections to put Fragrances/Fragrance first
@@ -26,6 +29,46 @@ export default async function Home() {
     })
   );
 
+  if (collectionsWithProducts.length === 0) {
+    return (
+      <div className="py-20 text-center text-white/20 uppercase tracking-luxury">
+        Discovering our heritage...
+      </div>
+    );
+  }
+
+  return (
+    <>
+      {collectionsWithProducts.map((c, index) => (
+        <div key={c.handle}>
+          <ProductCarousel
+            title={c.name}
+            collection={c.name}
+            products={c.products}
+          />
+        </div>
+      ))}
+    </>
+  );
+}
+
+function CollectionsSkeleton() {
+  return (
+    <div className="py-24 space-y-12">
+      <div className="text-center space-y-4">
+        <div className="h-4 bg-white/5 w-48 mx-auto rounded animate-pulse" />
+        <div className="h-8 bg-white/10 w-64 mx-auto rounded animate-pulse" />
+      </div>
+      <div className="flex gap-4 px-4 overflow-hidden">
+        {[1, 2, 3, 4].map((i) => (
+          <div key={i} className="min-w-[280px] md:min-w-[320px] aspect-[3/4] bg-white/5 rounded-2xl animate-pulse" />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+export default function Home() {
   return (
     <main className="min-h-screen bg-black" suppressHydrationWarning>
       <Header />
@@ -33,25 +76,9 @@ export default async function Home() {
       <ScrollingText />
 
       <div id="collections" className="space-y-0">
-        {collectionsWithProducts.map((c, index) => (
-          <div key={c.handle}>
-            <ProductCarousel
-              title={c.name}
-              collection={c.name}
-              products={c.products}
-            />
-          </div>
-        ))}
-
-        {/* TODO: Seção desativada porque os cards de coleção (react-bits carousel) estão sem fotos e desatualizados */}
-        {/* <VideoSection collections={collections} /> */}
-
-        {/* If no collections found, show a fallback space */}
-        {collectionsWithProducts.length === 0 && (
-          <div className="py-20 text-center text-white/20 uppercase tracking-luxury">
-            Discovering our heritage...
-          </div>
-        )}
+        <Suspense fallback={<CollectionsSkeleton />}>
+          <HomeCollections />
+        </Suspense>
       </div>
 
       <Footer />

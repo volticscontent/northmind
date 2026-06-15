@@ -6,25 +6,23 @@ generator client {
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
-  schemas  = ["public", "admin"]
+  schemas  = ["admin", "public"]
 }
 
-// NextAuth Required Models (Schema: admin)
 model Account {
   id                String  @id @default(cuid())
   userId            String
   type              String
   provider          String
   providerAccountId String
-  refresh_token     String? @db.Text
-  access_token      String? @db.Text
+  refresh_token     String?
+  access_token      String?
   expires_at        Int?
   token_type        String?
   scope             String?
-  id_token          String? @db.Text
+  id_token          String?
   session_state     String?
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([provider, providerAccountId])
   @@schema("admin")
@@ -41,52 +39,48 @@ model Session {
 }
 
 model Admin {
-  id             String    @id @default(cuid())
-  name           String?
-  email          String    @unique
-  hashedPassword String?
-
-  dataDeEntrada  DateTime  @default(now())
-  dataDeUltimoAcesso DateTime  @updatedAt
+  id                 String   @id @default(cuid())
+  name               String?
+  email              String   @unique
+  hashedPassword     String?
+  dataDeEntrada      DateTime @default(now())
+  dataDeUltimoAcesso DateTime @updatedAt
 
   @@map("Admin")
   @@schema("admin")
 }
 
 model User {
-  id                 String    @id @default(cuid())
+  id                 String       @id @default(cuid())
   name               String?
-  email              String?   @unique
+  email              String?      @unique
   emailVerified      DateTime?
   image              String?
-  hashedPassword     String?   // Para login com email/senha
+  hashedPassword     String?
   telefone           String?
   pais               String?
   aniversario        DateTime?
   localizacao        String?
   statusUltimoPedido String?
-  
-  dataDeEntrada      DateTime  @default(now())
-  dataDeUltimoAcesso DateTime  @updatedAt
-
+  dataDeEntrada      DateTime     @default(now())
+  dataDeUltimoAcesso DateTime     @updatedAt
   accounts           Account[]
-  sessions           Session[]
   pedidos            Pedido[]
-  comentarios        Comentario[] // Relation to comments
+  sessions           Session[]
+  comentarios        Comentario[]
 
   @@schema("admin")
 }
 
 model Pedido {
-  id          String   @id @default(cuid())
-  userId      String
-  user        User     @relation(fields: [userId], references: [id], onDelete: Restrict)
-  status      String   @default("PENDENTE") // PENDENTE, PAGO, ENVIADO, ENTREGUE
-  produtosIds String[] // IDs dos produtos comprados
-  totalAmmount Float    @default(0) // Total cobrado
-  
-  dataCompra  DateTime @default(now())
-  dataEntrega DateTime?
+  id           String    @id @default(cuid())
+  userId       String
+  status       String    @default("PENDENTE")
+  produtosIds  String[]
+  totalAmmount Float     @default(0)
+  dataCompra   DateTime  @default(now())
+  dataEntrega  DateTime?
+  user         User      @relation(fields: [userId], references: [id])
 
   @@schema("admin")
 }
@@ -100,35 +94,33 @@ model VerificationToken {
   @@schema("admin")
 }
 
-// Produtos (Schema: public)
 model Produto {
-  id              String   @id @default(cuid())
+  id              String       @id @default(cuid())
   nome            String
-  handle          String   @unique
-  descricao       String   @db.Text
+  handle          String       @unique
+  descricao       String
   preco           Float
   precoOriginal   Float?
   collection      String
-  fotoPrincipal   String?  // Foto de destaque (Thumbnail)
-  fotos           String[] // Outras fotos do grid
-  publicado       Boolean  @default(true)
-  opcoesTamanho   String[] @default(["S", "M", "L", "XL", "XXL"])
-  opcoesCor       Json?    // [{ name: "Black", hex: "#000000" }]
-  highlights      Json?    // [{ icon: "Shield", title: "Warranty", text: "..." }]
-  variantes       Json?    // Elite Pricing (Size/ML)
-  materiais       Json?    // Elite Fabric Composition
-  especificacoes  String[] // Technical Bullets
-  guiaTamanho     Json?    // Sizing Chart Table
-  detalhesModelo  String?  // Model wear info
-  instrucoesCuidado String? // Care instructions
+  fotos           String[]
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+  fotoPrincipal   String?
+  mediaAvaliacoes Float        @default(5.0)
+  totalAvaliacoes Int          @default(0)
+  publicado       Boolean      @default(true)
+  opcoesTamanho   String[]     @default(["S", "M", "L", "XL", "XXL"])
+  opcoesCor       Json?        // [{ name: "Black", hex: "#000000" }]
+  highlights      Json?        // [{ icon: "Shield", title: "Warranty", text: "..." }]
+  materiais       Json?        // [{ item: "Cotton", percentage: "100%" }]
+  variantes       Json?        // [{ label: "50ml", price: 49.99, originalPrice: 65.00 }]
+  guiaTamanho     Json?        // { table: [...], note: "..." }
+  detalhesModelo  String?
+  instrucoesCuidado String?
+  especificacoes  String[]
   videos          String[]
-  totalAvaliacoes Int      @default(0)
-  mediaAvaliacoes Float    @default(5.0)
-  comentarios     Comentario[] // Relation to actual comments if present
-  tipo            String   @default("ROUPA") // ["ROUPA", "PERFUME"]
-
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  comentarios     Comentario[]
+  tipo            String       @default("ROUPA") // ["ROUPA", "PERFUME"]
 
   @@schema("public")
 }
@@ -136,18 +128,15 @@ model Produto {
 model Comentario {
   id        String   @id @default(cuid())
   rating    Int      @default(5)
-  texto     String   @db.Text
+  texto     String
   fotos     String[]
   videoUrl  String?
   createdAt DateTime @default(now())
-
-  // Relations
   produtoId String
-  produto   Produto @relation(fields: [produtoId], references: [id], onDelete: Cascade)
-
-  userId   String
-  user     User    @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userName String? // Cache user name at time of comment
+  userId    String
+  userName  String?
+  produto   Produto  @relation(fields: [produtoId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@schema("public")
 }
@@ -156,11 +145,31 @@ model Collection {
   id          String   @id @default(cuid())
   name        String   @unique
   handle      String   @unique
-  description String?  @db.Text
+  description String?
   image       String?
-
+  publicado   Boolean  @default(true)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
   @@schema("public")
+}
+
+model StoreSettings {
+  id                 String   @id @default("singleton")
+  // Native ad platform pixel IDs (client-side tags)
+  metaPixelId        String?
+  tiktokPixelId      String?
+  googleTagId        String?
+  // UTMify client-side pixel ID (for browser script)
+  utmifyPixelId      String?
+  // UTMify S2S API keys — one per ad platform connection
+  utmifyMetaApiKey   String?
+  utmifyTiktokApiKey String?
+  utmifyGoogleApiKey String?
+  // Conversion config
+  gbpToBrlRate       Float    @default(7.4)
+  trackingMode       String   @default("production")
+  updatedAt          DateTime @updatedAt
+
+  @@schema("admin")
 }

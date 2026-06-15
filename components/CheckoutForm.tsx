@@ -44,7 +44,7 @@ export default function CheckoutForm({ items, clientSecret }: CheckoutFormProps)
   const [phone, setPhone] = useState("");
   const [showCountrySelector, setShowCountrySelector] = useState(false);
   const [selectedCountry, setSelectedCountry] = useState(countries[0]);
-  const [country, setCountry] = useState("UK");
+  const [country, setCountry] = useState("GB");
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [address, setAddress] = useState("");
@@ -101,12 +101,19 @@ export default function CheckoutForm({ items, clientSecret }: CheckoutFormProps)
     
     icTriggered.current = true;
     if (email) localStorage.setItem('nm_customer_email', email);
+    const fullPhone = phone ? `${selectedCountry.code}${phone}` : null;
+    if (fullPhone) localStorage.setItem('nm_customer_phone', fullPhone);
     const utmifyId = localStorage.getItem('utmify_id') || localStorage.getItem('success-id');
     const utmSource = localStorage.getItem('utm_source');
 
     try {
-      console.log('🚀 FRONTEND: Sending Early IC Tracking (Backend + Pixel)...');
-      
+
+      // TikTok advanced matching — identify before event fires
+      const ttq = (window as any).ttq;
+      if (ttq && email) {
+        ttq.identify({ email, ...(fullPhone && { phone_number: fullPhone }) });
+      }
+
       // Browser Pixel Tracking
       trackBeginCheckout(
         items.map(i => ({ id: i.id, title: i.name, price: i.price, quantity: i.quantity })),
@@ -117,18 +124,25 @@ export default function CheckoutForm({ items, clientSecret }: CheckoutFormProps)
         customer: {
           name: `${firstName || 'Guest'} ${lastName}`,
           email: email || 'guest@northmind.store',
-          phone: phone ? `${selectedCountry.code}${phone}` : '00000000000'
+          phone: fullPhone || '00000000000',
+          country: country || 'GB',
+          state: county || null,
+          city: city || null,
+          postcode: postcode || null,
+          address: address || null,
+          complement: complement || null,
         },
         trackingParameters: {
           utmify_id: utmifyId,
           utm_source: utmSource,
           utm_medium: localStorage.getItem('utm_medium'),
-          utm_campaign: localStorage.getItem('utm_campaign')
+          utm_campaign: localStorage.getItem('utm_campaign'),
+          utm_content: localStorage.getItem('utm_content'),
+          utm_term: localStorage.getItem('utm_term'),
         },
         amount: total,
         products: items.map(i => ({ id: i.id, name: i.name, quantity: i.quantity, priceInCents: Math.round(i.price * 100) }))
       });
-      console.log('✅ Early IC Tracking Sent Successfully');
     } catch (e) {
       console.warn('⚠️ Early IC failed', e);
       icTriggered.current = false; // Permite tentar novamente no Pay Now se falhar
@@ -164,26 +178,45 @@ export default function CheckoutForm({ items, clientSecret }: CheckoutFormProps)
           customer: {
             name: `${firstName} ${lastName}`,
             email,
-            phone: `${selectedCountry.code}${phone}`
+            phone: `${selectedCountry.code}${phone}`,
+            country: country || 'GB',
+            state: county || null,
+            city: city || null,
+            postcode: postcode || null,
+            address: address || null,
+            complement: complement || null,
           },
           trackingParameters: {
             utmify_id: utmifyId,
             utm_source: utmSource,
             utm_medium: localStorage.getItem('utm_medium'),
-            utm_campaign: localStorage.getItem('utm_campaign')
+            utm_campaign: localStorage.getItem('utm_campaign'),
+            utm_content: localStorage.getItem('utm_content'),
+            utm_term: localStorage.getItem('utm_term'),
           },
           amount: total,
           products: items.map(i => ({ id: i.id, name: i.name, quantity: i.quantity, priceInCents: Math.round(i.price * 100) }))
         }).catch(e => console.warn('IC tracking fallback failed', e));
       }
 
-      // 1. Create Order in Database (PENDING/PAID)
+      // 1. Validar os campos do Stripe ANTES de criar a ordem no banco
+      //    Isso evita pedidos "PAID" no banco sem pagamento real
+      const { error: submitError, submission } = await (elements as any).submit();
+      if (submitError) {
+        setErrorMessage(
+          submitError.message || "Payment validation error.",
+        );
+        setIsLoading(false);
+        return;
+      }
+
+      // 2. Criar a ordem no banco (só chega aqui se Stripe validou os campos)
       const cleanTotal = Number(total.toFixed(2));
       const { data: orderResponse } = await axios.post(`${API_URL}/api/orders`, {
         items,
         total: cleanTotal,
-        status: "PAID", // Simplified for this direct flow
-        userEmail: session?.user?.email, // Sends session email if logged in
+        status: "PAID",
+        userEmail: session?.user?.email,
         customerInfo: {
           email,
           phone,
@@ -198,21 +231,10 @@ export default function CheckoutForm({ items, clientSecret }: CheckoutFormProps)
         }
       });
 
-      // 2. Trigger validation
-      const { error: submitError, submission } = await (elements as any).submit();
-      if (submitError) {
-        setErrorMessage(
-          submitError.message || "Payment validation error.",
-        );
-        setIsLoading(false);
-        return;
-      }
-
       const intentId = clientSecret ? clientSecret.split('_secret')[0] : null;
 
       // --- CUSTOM PAYMENT METHOD HANDLE (NORTHMIND) ---
       if (submission?.selectedPaymentMethod?.type === "cpmt_northmind") {
-        console.log("🚀 Custom Payment Method Selected: northmind");
         try {
           // Track purchase as 'northmind' directly
           await axios.post(`${API_URL}/api/payment/track-purchase`, {
@@ -226,14 +248,12 @@ export default function CheckoutForm({ items, clientSecret }: CheckoutFormProps)
           return;
         } catch (e) {
           console.warn("Northmind tracking error", e);
-          // Fallback: stay on page or proceed to redirect anyway? 
-          // Usually redirect as order is already PAGO in our DB
           window.location.href = `${window.location.origin}/success?o=${orderResponse.id}&u=${orderResponse.userId}&utmify_id=${utmifyId}`;
           return;
         }
       }
 
-      // 3. Update Stripe Metadata (For standard card/BNPL methods)
+      // 3. Atualizar metadados do Stripe (para métodos padrão card/BNPL)
       if (intentId) {
         await axios.post(`${API_URL}/api/payment/update-metadata`, {
           intentId,
@@ -241,15 +261,25 @@ export default function CheckoutForm({ items, clientSecret }: CheckoutFormProps)
             customer_name: `${firstName} ${lastName}`,
             customer_email: email,
             customer_phone: `${selectedCountry.code} ${phone}`,
-            utmify_id: utmifyId,
-            utm_source: utmSource,
+            customer_country: country || 'GB',
+            customer_state: county || '',
+            customer_city: city || '',
+            customer_postal_code: postcode || '',
+            customer_address: address || '',
+            customer_complement: complement || '',
+            utmify_id: utmifyId || '',
+            utm_source: utmSource || '',
+            utm_medium: localStorage.getItem('utm_medium') || '',
+            utm_campaign: localStorage.getItem('utm_campaign') || '',
+            utm_content: localStorage.getItem('utm_content') || '',
+            utm_term: localStorage.getItem('utm_term') || '',
             order_id: orderResponse.id,
-            user_id: orderResponse.userId
+            user_id: orderResponse.userId,
           }
         });
       }
 
-      // 4. Confirm Stripe Payment
+      // 4. Confirmar o pagamento no Stripe
       const { error } = await stripe.confirmPayment({
         elements,
         confirmParams: {
@@ -265,7 +295,7 @@ export default function CheckoutForm({ items, clientSecret }: CheckoutFormProps)
                 city: city,
                 state: county,
                 postal_code: postcode,
-                country: country,
+                country: country, // ISO-2: "GB"
               },
             },
           },
@@ -391,7 +421,7 @@ export default function CheckoutForm({ items, clientSecret }: CheckoutFormProps)
               value={country}
               onChange={(e) => setCountry(e.target.value)}
             >
-              <option value="UK">United Kingdom</option>
+              <option value="GB">United Kingdom</option>
             </select>
           </div>
 
@@ -504,7 +534,6 @@ export default function CheckoutForm({ items, clientSecret }: CheckoutFormProps)
                 // Dispara o Initiate Checkout assim que o cliente interagir com o campo de cartão
                 // garantindo que ele está com forte intenção de compra
                 if (!event.empty && !icTriggered.current) {
-                  console.log("💳 Card Element Interaction Detected! Triggering strong IC...");
                   handleEarlyIC(true);
                 }
               }}

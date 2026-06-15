@@ -8,7 +8,7 @@ const faqData = [
   {
     id: 1,
     question: "What are the delivery times?",
-    icon: <Plane size={18} className="text-[#C5A358]" />,
+    icon: <Plane size={18} className="text-white/60" />,
     answer: (
       <>
         We dispatch orders within <strong>1–3 business days</strong>.<br />
@@ -21,7 +21,7 @@ const faqData = [
   {
     id: 2,
     question: "How can I track my order?",
-    icon: <MapPin size={18} className="text-[#C5A358]" />,
+    icon: <MapPin size={18} className="text-white/60" />,
     answer: (
       <>
         You will receive a <strong>tracking number by email</strong> once your
@@ -35,7 +35,7 @@ const faqData = [
   {
     id: 3,
     question: "What is your returns policy?",
-    icon: <RotateCcw size={18} className="text-[#C5A358]" />,
+    icon: <RotateCcw size={18} className="text-white/60" />,
     answer: (
       <>
         We accept returns within <strong>14 days</strong> of delivery,
@@ -49,7 +49,7 @@ const faqData = [
   {
     id: 4,
     question: "What should I do if my item is faulty?",
-    icon: <HelpCircle size={18} className="text-[#C5A358]" />,
+    icon: <HelpCircle size={18} className="text-white/60" />,
     answer: (
       <>
         If your product arrives damaged or defective, please email us within{" "}
@@ -67,14 +67,17 @@ export function ProductFaqBox() {
 
   return (
     <div className="space-y-4">
-      <h3 className="text-xs uppercase font-bold tracking-luxury text-white mb-6">
-        Customer Queries
-      </h3>
+      <div className="flex items-center gap-4 mb-8">
+        <h3 className="text-sm font-bold uppercase tracking-widest text-white/90">
+          Frequently Asked
+        </h3>
+        <div className="h-[1px] flex-grow bg-white/10" />
+      </div>
       <div className="grid grid-cols-1 gap-3">
         {faqData.map((faq) => (
           <div
             key={faq.id}
-            className={`premium-border overflow-hidden transition-all duration-500 ${activeFaq === faq.id ? "bg-white/5 border-white/20" : "bg-card/20 border-white/5"
+            className={`overflow-hidden transition-all duration-300 border-b ${activeFaq === faq.id ? "border-white/30 bg-white/[0.02]" : "border-white/10 bg-transparent"
               }`}
           >
             <button
@@ -83,10 +86,10 @@ export function ProductFaqBox() {
               aria-expanded={activeFaq === faq.id}
             >
               <div className="flex items-center gap-4">
-                <span className="p-2 rounded-lg bg-black/40 border border-white/5 group-hover:border-accent/30 transition-colors">
+                <span className="p-0 transition-colors">
                   {faq.icon}
                 </span>
-                <span className="text-[11px] font-bold uppercase tracking-widest text-white/90 group-hover:text-white transition-colors">
+                <span className="text-[11px] font-medium uppercase tracking-widest text-white/80 group-hover:text-white transition-colors">
                   {faq.question}
                 </span>
               </div>

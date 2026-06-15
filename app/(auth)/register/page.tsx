@@ -38,15 +38,16 @@ export default function RegisterPage() {
     setIsLoading(true);
 
     try {
+      const { registerUser } = await import("@/lib/actions");
       const dataToSubmit = {
         ...formData,
         pais: selectedCountry.name,
         telefone: `${selectedCountry.code} ${formData.telefone}`,
       };
-      await axios.post(`${API_URL}/api/auth/register`, dataToSubmit);
+      await registerUser(dataToSubmit);
       router.push("/login");
-    } catch (error) {
-      alert("Something went wrong");
+    } catch (error: any) {
+      alert(error.message || "Something went wrong");
     } finally {
       setIsLoading(false);
     }

@@ -33,13 +33,12 @@ export default function CheckoutPage() {
   }));
 
   useEffect(() => {
-    console.log("🛒 Cart Total (GBP):", totalAmount);
     if (totalAmount <= 0) return; // If cart is empty, do not attempt to create payment
 
     // Cria o PaymentIntent via API route
     const createPaymentIntent = async () => {
       try {
-        const response = await fetch(`${API_URL}/api/payment/create-payment-intent`, {
+        const response = await fetch(`/api/payment/create-payment-intent`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({

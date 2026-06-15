@@ -217,7 +217,7 @@ export function MediaUpload({
       const session = await auth.getSession();
       const token = (session?.user as any)?.token || "";
 
-      const res = await fetch(`${API_URL}/api/upload`, {
+      const res = await fetch(`/api/upload`, {
         method: "POST",
         body: formData,
         headers: {

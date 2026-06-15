@@ -15,3 +15,11 @@
 ## [2026-04-24 07:29] [FEAT] Aprimoramento do fluxo de Checkout e Tracking S2S.
 - Files affected: [[utmify]]
 - Context: Integração das tags `<script dangerouslySetInnerHTML>` nativas para carregar os pixels da Meta e TikTok sincronicamente. Refatoração do payload enviado ao UTMify para seguir estritamente o formato de datas requerido (`YYYY-MM-DD HH:MM:SS`). Adoção de um "Strong Initiate Checkout" antecipado (acionado ao focar no PaymentElement do Stripe) para garantir alta retenção de leads na Utmify, além da correção da lógica do carrossel na Product Detail Page que causava tela em branco ao trocar a imagem ativa.
+
+## [2026-04-24 18:17] [LINT] Normalização dos paths da KB para Obsidian (vault em knowledge-base/).
+- Files affected: [[northmind-store]], [[northmind-repo]], [[utmify]], [[index]], [[overview]]
+- Context: Ajuste dos paths no tracking.canvas para serem relativos ao vault (`wiki/...`, `raw/...`) e padronização das referências de raw nas páginas wiki.
+
+## [2026-04-24 18:35] [LINT] Alinhamento do tracking.canvas com a spec de layout.
+- Files affected: [[tracking]]
+- Context: Padronização de grid (X em +300), bandas Y por domínio e dimensões default (file: 260×80) para facilitar manutenção e consistência visual.

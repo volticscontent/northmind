@@ -2,7 +2,7 @@
 
 ## Fonte
 - Path: ../ (interpretado como raiz do repositório northmind)
-- Raw: knowledge-base/raw/docs/2026-04-23-northmind-repo.md
+- Raw: raw/docs/2026-04-23-northmind-repo.md
 - Ingested at (UTC): 2026-04-23 22:51
 
 ## Snapshot

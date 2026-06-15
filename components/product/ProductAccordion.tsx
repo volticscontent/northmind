@@ -16,7 +16,7 @@ interface ProductAccordionProps {
 }
 
 export function ProductAccordion({ items }: ProductAccordionProps) {
-  const [activeId, setActiveId] = useState<string | null>(items[0]?.id || null);
+  const [activeId, setActiveId] = useState<string | null>(null);
 
   return (
     <div className="space-y-4 pt-5 px-1">
@@ -24,9 +24,9 @@ export function ProductAccordion({ items }: ProductAccordionProps) {
         {items.map((item) => (
           <div
             key={item.id}
-            className={`overflow-hidden transition-all duration-500 border ${activeId === item.id
-              ? "bg-black border-white/40 border-b-2 shadow-2xl"
-              : "bg-black border-white/10 border-b-2"
+            className={`overflow-hidden transition-all duration-500 border-b ${activeId === item.id
+              ? "border-white/30"
+              : "border-white/10"
               }`}
           >
             <button
@@ -35,13 +35,13 @@ export function ProductAccordion({ items }: ProductAccordionProps) {
               aria-expanded={activeId === item.id}
             >
               <div className="flex items-center gap-4">
-                <span className={`p-2 border-b-2 transition-all duration-500 ${activeId === item.id
-                  ? "bg-accent/10 border-white/20 border-b-1 text-white"
-                  : "bg-white/5 border-white/5 border-b-2 text-white/90 group-hover:text-white/90"
+                <span className={`p-0 transition-all duration-500 ${activeId === item.id
+                  ? "text-white"
+                  : "text-white/60 group-hover:text-white"
                   }`}>
                   {item.icon}
                 </span>
-                <span className={`text-[11px] font-black uppercase tracking-[0.15em] transition-colors ${activeId === item.id ? "text-white" : "text-white/60 group-hover:text-white/90"
+                <span className={`text-[11px] font-medium uppercase tracking-[0.2em] transition-colors ${activeId === item.id ? "text-white" : "text-white/60 group-hover:text-white"
                   }`}>
                   {item.title}
                 </span>

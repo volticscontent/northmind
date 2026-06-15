@@ -180,8 +180,8 @@ export function ProductInteractions({ product, allProducts = [] }: ProductIntera
       {/* Visual Color Selection */}
       {colors.length > 0 && (
         <div className="space-y-4">
-          <h1 className="text-xs font-black uppercase tracking-luxury text-white/90">
-            Color: {selectedColor}
+          <h1 className="text-xs font-bold uppercase tracking-widest text-white/90">
+            Color: <span className="font-light text-white/60">{selectedColor}</span>
           </h1>
           <div className="flex gap-3">
             {colors.map((color: any) => (
@@ -212,8 +212,8 @@ export function ProductInteractions({ product, allProducts = [] }: ProductIntera
       {/* Visual Size Selection */}
       <div>
         <div className="flex items-center justify-between mb-5">
-          <h4 className="text-xs uppercase font-bold tracking-luxury text-white/60">
-            {isFragrance ? "SELECT VOLUME" : "SELECT SIZE"}
+          <h4 className="text-xs uppercase font-medium tracking-[0.2em] text-white/60">
+            {isFragrance ? "Select Volume" : "Select Size"}
           </h4>
           {!isFragrance && product.guiaTamanho && (
             <button
@@ -241,9 +241,9 @@ export function ProductInteractions({ product, allProducts = [] }: ProductIntera
             <button
               key={size}
               onClick={() => setSelectedSize(size)}
-              className={`aspect-square h-12 w-20 flex items-center justify-center border text-xl font-semibold transition-all duration-500 ${selectedSize === size
-                ? "border-white text-white bg-accent/5"
-                : "border-white/5 text-white/30 hover:border-white/20 hover:text-accent"
+              className={`aspect-square h-12 w-20 flex items-center justify-center text-sm font-medium transition-all duration-300 rounded-md ${selectedSize === size
+                ? "bg-white text-black shadow-lg"
+                : "bg-white/[0.03] text-white/40 hover:bg-white/10 hover:text-white"
                 }`}
             >
               {size}
@@ -253,13 +253,12 @@ export function ProductInteractions({ product, allProducts = [] }: ProductIntera
       </div>
 
       {/* Bundle Selection */}
-      <div className="space-y-4">
+      <div className="">
         <div className="flex items-center">
-          <div className="h-[1px] flex-grow bg-white/10" />
-          <h3 className="text-sm font-black uppercase tracking-luxury text-white/90">
+          <h3 className="text-sm font-bold uppercase tracking-widest text-white/90">
             Bundle & Save
           </h3>
-          <div className="h-[1px] flex-grow bg-white/10" />
+          <div className="h-[1px] flex-grow bg-white/10 ml-4" />
         </div>
 
         {bundles.map((bundle) => (
@@ -275,17 +274,12 @@ export function ProductInteractions({ product, allProducts = [] }: ProductIntera
             )}
             <div
               onClick={() => setSelectedBundle(bundle.id)}
-              className={`relative w-full cursor-pointer rounded-xl transition-all duration-500 border overflow-hidden ${selectedBundle === bundle.id
-                ? "bg-card/100 border-white/90 shadow-[0_0_20px_rgba(197,163,88,0.1)]"
-                : bundle.isPopular
-                  ? "bg-card/50 border-white/20 hover:border-white/30"
-                  : "bg-card/50 border-white/5 hover:border-white/20"
+              className={`relative w-full cursor-pointer rounded-xl transition-all duration-300 border overflow-hidden ${selectedBundle === bundle.id
+                ? "bg-white/[0.05] border-white/50 shadow-[0_4px_30px_rgba(255,255,255,0.05)] backdrop-blur-md"
+                : "bg-transparent border-white/10 hover:border-white/20"
                 }`}
             >
               <div className="p-5 flex items-center justify-between">
-                {bundle.save && (
-                  <div className="absolute inset-0 overflow-hidden rounded-xl pointer-events-none glare-loop opacity-30" />
-                )}
                 <div className="flex gap-6 items-center flex-grow">
                   <div className="relative h-6 w-6 rounded-full border-2 border-white/20 flex items-center justify-center transition-colors duration-500 group-hover:border-white/40 shrink-0">
                     <div
@@ -296,7 +290,7 @@ export function ProductInteractions({ product, allProducts = [] }: ProductIntera
                     />
                   </div>
                   <div className="space-y-1">
-                    <h4 className="text-base md:text-lg font-black text-white uppercase tracking-tight leading-none">
+                    <h4 className="text-base md:text-lg font-bold text-white uppercase tracking-tight leading-none">
                       {bundle.title}
                     </h4>
                     {bundle.save && (
@@ -416,20 +410,20 @@ export function ProductInteractions({ product, allProducts = [] }: ProductIntera
       </div>
 
       {/* Checkout Buttons */}
-      <div className="flex flex-col gap-4">
+      <div className="flex flex-col gap-3 pt-6 border-t border-white/5 relative z-10">
         <button
           onClick={handleAddToCart}
           disabled={isAdding}
-          className="btn-premium w-full text-base border-2 border-white/90 bg-black text-white flex items-center justify-center gap-3 rounded-md hover:bg-black hover:border-[#C5A358] transition-colors py-4"
+          className="relative overflow-hidden w-full font-black uppercase tracking-[0.2em] text-sm flex items-center justify-center gap-3 rounded-lg py-4 transition-all duration-500 bg-gradient-to-r from-white to-gray-200 text-black shadow-[0_0_40px_rgba(255,255,255,0.15)] hover:shadow-[0_0_60px_rgba(255,255,255,0.3)] hover:scale-[1.02] active:scale-[0.98]"
         >
-          {isAdding ? "ADDING TO CART..." : "ADD TO CART"}
-          {!isAdding && <ShoppingCart size={20} />}
+          {isAdding ? "Adding to Vault..." : "Add to Cart"}
+          <div className="absolute inset-0 bg-white/20 translate-y-full hover:translate-y-0 transition-transform duration-500 ease-out" />
         </button>
         <button
           onClick={handleDirectCheckout}
-          className="btn-premium bg-white w-full font-bold text-base flex items-center justify-center gap-3 rounded-md hover:bg-white/90 transition-colors py-4 text-black"
+          className="w-full font-bold uppercase tracking-widest text-xs flex items-center justify-center gap-3 rounded-lg py-4 transition-all duration-300 bg-white/[0.03] backdrop-blur-md text-white border border-white/10 hover:bg-white/10 hover:border-white/30 active:scale-[0.98]"
         >
-          CHECKOUT NOW
+          Checkout Now
         </button>
       </div>
 

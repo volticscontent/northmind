@@ -7,7 +7,7 @@ import {
   ChevronDown, Monitor, Smartphone, ExternalLink,
   Save, Eye, Settings, Image as ImageIcon,
   Type, ShoppingBag, ShieldCheck, Truck, ListPlus, Play,
-  Loader2
+  Loader2, CheckCircle, XCircle,
 } from "lucide-react";
 import { CollectionManager } from "./CollectionManager";
 import { upsertProduct, deleteProduct } from "@/lib/actions";
@@ -27,6 +27,12 @@ export function ProductManager({ initialProducts }: { initialProducts: any[] }) 
   const [productsPerPage] = useState(10);
   const [previewMode, setPreviewMode] = useState<"mobile" | "desktop">("desktop");
   const iframeRef = useRef<HTMLIFrameElement>(null);
+  const [toast, setToast] = useState<{ type: "success" | "error"; msg: string } | null>(null);
+
+  const showToast = (type: "success" | "error", msg: string) => {
+    setToast({ type, msg });
+    setTimeout(() => setToast(null), 3000);
+  };
 
   const [formData, setFormData] = useState<any>({
     nome: "",
@@ -201,22 +207,24 @@ export function ProductManager({ initialProducts }: { initialProducts: any[] }) 
       await upsertProduct(payload);
       router.refresh();
       if (!editingProduct) closeEditor();
-      alert("Changes synced successfully.");
+      showToast("success", "Changes synced successfully.");
     } catch (error) {
       console.error(error);
-      alert("Error saving.");
+      showToast("error", "Error saving. Please try again.");
     } finally {
       setIsSubmitting(false);
     }
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm("Confirm asset deletion?")) return;
+    if (!confirm("Confirm asset deletion? This cannot be undone.")) return;
     try {
       await deleteProduct(id);
       setProducts(products.filter(p => p.id !== id));
+      showToast("success", "Asset deleted.");
     } catch (error) {
       console.error(error);
+      showToast("error", "Failed to delete asset.");
     }
   };
 
@@ -231,6 +239,18 @@ export function ProductManager({ initialProducts }: { initialProducts: any[] }) 
 
   return (
     <div className="space-y-12 relative min-h-screen">
+      {/* Toast notification */}
+      {toast && (
+        <div
+          className={`fixed bottom-6 right-6 z-[300] flex items-center gap-3 px-5 py-3.5 rounded-2xl shadow-2xl text-xs font-black uppercase tracking-widest animate-in slide-in-from-bottom-4 duration-300 ${
+            toast.type === "success" ? "bg-emerald-500 text-black" : "bg-rose-500 text-white"
+          }`}
+        >
+          {toast.type === "success" ? <CheckCircle size={16} /> : <XCircle size={16} />}
+          {toast.msg}
+        </div>
+      )}
+
       {currentView !== "editor" && (
         <div className="flex items-center justify-between animate-fade-in">
           <div className="space-y-1">

@@ -16,7 +16,7 @@ import { ProfileCard } from "@/components/user/ProfileCard";
 import { OrderCard } from "@/components/user/OrderCard";
 import { ArrowRight, ShieldCheck, Mail, Trash2, RotateCcw } from "lucide-react";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
+import prisma from "@/lib/prisma";
 
 export default async function DashboardPage() {
   const session = await getServerSession(authOptions);
@@ -25,17 +25,20 @@ export default async function DashboardPage() {
     redirect("/login");
   }
 
-  let user, productsDict;
+  let user, productsDict: Record<string, any> = {};
+  
   try {
-    const res = await fetch(`${API_URL}/api/admin/customer/${session.user.email}`, { 
-      cache: "no-store",
-      headers: {
-        Authorization: `Bearer ${(session?.user as any)?.token}`
+    // 1. Fetch user directly via Prisma instead of old external API
+    const dbUser = await prisma.user.findUnique({
+      where: { email: session.user.email },
+      include: {
+        pedidos: {
+          orderBy: { dataCompra: 'desc' }
+        }
       }
     });
     
-    if (!res.ok) {
-        console.error(`Customer API failed with status: ${res.status}`);
+    if (!dbUser) {
         return (
           <div className="min-h-screen bg-black flex items-center justify-center p-6 text-center">
             <div className="max-w-md space-y-6">
@@ -58,17 +61,31 @@ export default async function DashboardPage() {
         );
     }
 
-    const data = await res.json();
-    user = data.user;
-    productsDict = data.productsDict;
+    user = dbUser;
+
+    // 2. Resolve productsDict for OrderCards
+    if (user.pedidos && user.pedidos.length > 0) {
+      const allProductIds = Array.from(new Set(user.pedidos.flatMap(p => p.produtosIds)));
+      if (allProductIds.length > 0) {
+        const products = await prisma.produto.findMany({
+          where: { id: { in: allProductIds } },
+          select: { id: true, nome: true, fotos: true, handle: true, preco: true, tipo: true }
+        });
+        
+        productsDict = products.reduce((acc, p) => {
+          acc[p.id] = p;
+          return acc;
+        }, {} as Record<string, any>);
+      }
+    }
   } catch (error) {
-    console.error("Dashboard Load Error:", error);
+    console.error("Dashboard Load Error (Prisma):", error);
     return (
       <div className="min-h-screen bg-black flex items-center justify-center p-6 text-center">
         <div className="max-w-md space-y-4">
           <Clock size={48} className="mx-auto text-rose-500/40" />
-          <h1 className="text-2xl font-light">Connection <span className="font-medium">Error</span></h1>
-          <p className="text-sm text-white/40">The backend server is not responding. Please make sure the backend is running.</p>
+          <h1 className="text-2xl font-light">Database <span className="font-medium">Error</span></h1>
+          <p className="text-sm text-white/40">We encountered an issue loading your data. Please try again later.</p>
           <a 
             href="/user"
             className="inline-block mt-6 px-8 py-4 bg-white/5 border border-white/10 text-white text-[10px] font-black uppercase tracking-widest rounded-xl hover:bg-white/10 transition-colors"

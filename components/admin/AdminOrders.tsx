@@ -1,77 +1,86 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { 
-  ShoppingBag, 
-  ChevronDown, 
-  Package, 
-  Truck, 
-  CheckCircle2, 
-  Clock, 
+import {
+  ShoppingBag,
+  ChevronDown,
+  Package,
+  Truck,
+  CheckCircle2,
+  Clock,
   RefreshCw,
   Search,
-  Filter,
-  Eye
+  CheckCircle,
+  XCircle,
 } from "lucide-react";
-import { API_URL } from "@/lib/api";
 import { getOrders, updateOrderStatus } from "@/lib/actions";
 
 const STATUS_CONFIG: Record<string, { label: string; color: string; bg: string; icon: any }> = {
   PENDENTE: { label: "Pendente", color: "text-amber-400", bg: "bg-amber-500/10", icon: Clock },
-  PAGO: { label: "Pago", color: "text-emerald-400", bg: "bg-emerald-500/10", icon: CheckCircle2 },
-  ENVIADO: { label: "Enviado", color: "text-blue-400", bg: "bg-blue-500/10", icon: Truck },
-  ENTREGUE: { label: "Entregue", color: "text-purple-400", bg: "bg-purple-500/10", icon: Package },
+  PAGO:     { label: "Pago",     color: "text-emerald-400", bg: "bg-emerald-500/10", icon: CheckCircle2 },
+  ENVIADO:  { label: "Enviado",  color: "text-blue-400",    bg: "bg-blue-500/10",    icon: Truck },
+  ENTREGUE: { label: "Entregue", color: "text-purple-400",  bg: "bg-purple-500/10",  icon: Package },
 };
 
 const STATUS_OPTIONS = ["PENDENTE", "PAGO", "ENVIADO", "ENTREGUE"];
+
+interface Produto { id: string; nome: string; fotoPrincipal: string | null }
 
 interface Order {
   id: string;
   status: string;
   totalAmmount: number;
   produtosIds: string[];
+  produtos: Produto[];
   dataCompra: string;
-  dataEntrega?: string;
-  user?: { name: string; email: string; id: string };
+  dataEntrega?: string | null;
+  user?: { name: string; email: string };
 }
 
-export default function AdminOrdersClient() {
-  const [orders, setOrders] = useState<Order[]>([]);
-  const [loading, setLoading] = useState(true);
+type Toast = { type: "success" | "error"; msg: string };
+
+export default function AdminOrdersClient({ initialOrders }: { initialOrders: Order[] }) {
+  const [orders, setOrders] = useState<Order[]>(initialOrders);
+  const [loading, setLoading] = useState(false);
   const [filter, setFilter] = useState("ALL");
   const [search, setSearch] = useState("");
   const [updatingId, setUpdatingId] = useState<string | null>(null);
-  const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [toast, setToast] = useState<Toast | null>(null);
+
+  const showToast = (type: Toast["type"], msg: string) => {
+    setToast({ type, msg });
+    setTimeout(() => setToast(null), 3000);
+  };
 
   const fetchOrders = async () => {
     setLoading(true);
     try {
       const data = await getOrders();
-      setOrders(data);
-    } catch (error) {
-      console.error("Failed to fetch orders", error);
+      setOrders(data as Order[]);
+    } catch {
+      showToast("error", "Failed to refresh orders.");
     } finally {
       setLoading(false);
     }
   };
 
-  useEffect(() => { fetchOrders(); }, []);
-
   const handleStatusChange = async (orderId: string, newStatus: string) => {
     setUpdatingId(orderId);
     try {
       await updateOrderStatus(orderId, newStatus);
-      setOrders(orders.map(o => o.id === orderId ? { ...o, status: newStatus } : o));
-    } catch (error) {
-      console.error("Failed to update", error);
+      setOrders((prev) => prev.map((o) => (o.id === orderId ? { ...o, status: newStatus } : o)));
+      showToast("success", "Status updated.");
+    } catch {
+      showToast("error", "Failed to update status.");
     } finally {
       setUpdatingId(null);
     }
   };
 
-  const filteredOrders = orders.filter(o => {
+  const filteredOrders = orders.filter((o) => {
     const matchesFilter = filter === "ALL" || o.status === filter;
-    const matchesSearch = search === "" || 
+    const matchesSearch =
+      search === "" ||
       o.user?.name?.toLowerCase().includes(search.toLowerCase()) ||
       o.user?.email?.toLowerCase().includes(search.toLowerCase()) ||
       o.id.toLowerCase().includes(search.toLowerCase());
@@ -84,7 +93,21 @@ export default function AdminOrdersClient() {
   }, {} as Record<string, number>);
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-8 relative">
+      {/* Toast */}
+      {toast && (
+        <div
+          className={`fixed bottom-6 right-6 z-50 flex items-center gap-3 px-5 py-3.5 rounded-2xl shadow-2xl text-xs font-black uppercase tracking-widest transition-all animate-in slide-in-from-bottom-4 duration-300 ${
+            toast.type === "success"
+              ? "bg-emerald-500 text-black"
+              : "bg-rose-500 text-white"
+          }`}
+        >
+          {toast.type === "success" ? <CheckCircle size={16} /> : <XCircle size={16} />}
+          {toast.msg}
+        </div>
+      )}
+
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
         <div>
@@ -95,8 +118,8 @@ export default function AdminOrdersClient() {
             {orders.length} total orders · {statusCounts["PENDENTE"] || 0} awaiting action
           </p>
         </div>
-        <button 
-          onClick={fetchOrders} 
+        <button
+          onClick={fetchOrders}
           className="flex items-center gap-2 px-5 py-2.5 bg-white/5 border border-white/10 rounded-full text-[10px] font-black uppercase tracking-widest text-white/60 hover:text-white hover:bg-white/10 transition-all"
         >
           <RefreshCw size={14} className={loading ? "animate-spin" : ""} />
@@ -109,14 +132,14 @@ export default function AdminOrdersClient() {
         <button
           onClick={() => setFilter("ALL")}
           className={`px-5 py-2.5 rounded-full text-[10px] font-black uppercase tracking-widest transition-all whitespace-nowrap ${
-            filter === "ALL" 
-            ? "bg-white text-black" 
-            : "bg-white/5 text-white/40 hover:text-white hover:bg-white/10 border border-white/5"
+            filter === "ALL"
+              ? "bg-white text-black"
+              : "bg-white/5 text-white/40 hover:text-white hover:bg-white/10 border border-white/5"
           }`}
         >
           All ({orders.length})
         </button>
-        {STATUS_OPTIONS.map(status => {
+        {STATUS_OPTIONS.map((status) => {
           const config = STATUS_CONFIG[status];
           const count = statusCounts[status] || 0;
           return (
@@ -124,9 +147,9 @@ export default function AdminOrdersClient() {
               key={status}
               onClick={() => setFilter(status)}
               className={`px-5 py-2.5 rounded-full text-[10px] font-black uppercase tracking-widest transition-all whitespace-nowrap flex items-center gap-2 ${
-                filter === status 
-                ? `${config.bg} ${config.color}` 
-                : "bg-white/5 text-white/40 hover:text-white hover:bg-white/10 border border-white/5"
+                filter === status
+                  ? `${config.bg} ${config.color}`
+                  : "bg-white/5 text-white/40 hover:text-white hover:bg-white/10 border border-white/5"
               }`}
             >
               {config.label} ({count})
@@ -142,7 +165,7 @@ export default function AdminOrdersClient() {
           type="text"
           placeholder="Search by customer name, email or order ID..."
           value={search}
-          onChange={e => setSearch(e.target.value)}
+          onChange={(e) => setSearch(e.target.value)}
           className="w-full bg-white/[0.03] border border-white/5 rounded-2xl py-3.5 pl-12 pr-4 text-xs text-white placeholder:text-white/20 focus:outline-none focus:border-white/20 transition-all"
         />
       </div>
@@ -165,11 +188,11 @@ export default function AdminOrdersClient() {
                 <tr className="border-b border-white/5">
                   <th className="py-5 px-6 text-[10px] font-black uppercase tracking-widest text-white/20">Order</th>
                   <th className="py-5 px-6 text-[10px] font-black uppercase tracking-widest text-white/20">Customer</th>
+                  <th className="py-5 px-6 text-[10px] font-black uppercase tracking-widest text-white/20">Products</th>
                   <th className="py-5 px-6 text-[10px] font-black uppercase tracking-widest text-white/20">Date</th>
-                  <th className="py-5 px-6 text-[10px] font-black uppercase tracking-widest text-white/20">Items</th>
                   <th className="py-5 px-6 text-[10px] font-black uppercase tracking-widest text-white/20">Status</th>
                   <th className="py-5 px-6 text-[10px] font-black uppercase tracking-widest text-white/20 text-right">Total</th>
-                  <th className="py-5 px-6 text-[10px] font-black uppercase tracking-widest text-white/20 text-right">Actions</th>
+                  <th className="py-5 px-6 text-[10px] font-black uppercase tracking-widest text-white/20 text-right">Update</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-white/[0.02]">
@@ -177,22 +200,19 @@ export default function AdminOrdersClient() {
                   const config = STATUS_CONFIG[order.status] || STATUS_CONFIG["PENDENTE"];
                   const StatusIcon = config.icon;
                   const isUpdating = updatingId === order.id;
-                  const isExpanded = expandedId === order.id;
                   const orderDate = new Date(order.dataCompra);
-                  
+
                   return (
-                    <tr 
-                      key={order.id} 
-                      className={`group transition-colors ${isExpanded ? 'bg-white/[0.02]' : 'hover:bg-white/[0.01]'}`}
-                    >
+                    <tr key={order.id} className="group hover:bg-white/[0.01] transition-colors">
                       <td className="py-5 px-6">
                         <span className="text-[10px] font-bold text-white/30 uppercase tracking-widest font-mono">
                           #{order.id.slice(-8)}
                         </span>
                       </td>
+
                       <td className="py-5 px-6">
                         <div className="flex items-center gap-3">
-                          <div className="size-8 rounded-full bg-gradient-to-br from-white/10 to-white/5 flex items-center justify-center text-[10px] font-black text-white/40 uppercase">
+                          <div className="size-8 rounded-full bg-gradient-to-br from-white/10 to-white/5 flex items-center justify-center text-[10px] font-black text-white/40 uppercase shrink-0">
                             {order.user?.name?.[0] || "?"}
                           </div>
                           <div className="flex flex-col">
@@ -205,6 +225,37 @@ export default function AdminOrdersClient() {
                           </div>
                         </div>
                       </td>
+
+                      <td className="py-5 px-6 max-w-[220px]">
+                        {order.produtos?.length ? (
+                          <div className="flex flex-col gap-1">
+                            {order.produtos.slice(0, 2).map((p) => (
+                              <div key={p.id} className="flex items-center gap-2">
+                                {p.fotoPrincipal && (
+                                  <img
+                                    src={p.fotoPrincipal}
+                                    alt={p.nome}
+                                    className="w-6 h-6 rounded object-cover border border-white/10 shrink-0"
+                                  />
+                                )}
+                                <span className="text-[10px] font-bold text-white/60 truncate">
+                                  {p.nome}
+                                </span>
+                              </div>
+                            ))}
+                            {order.produtos.length > 2 && (
+                              <span className="text-[9px] text-white/30 font-bold">
+                                +{order.produtos.length - 2} more
+                              </span>
+                            )}
+                          </div>
+                        ) : (
+                          <span className="text-[10px] text-white/20">
+                            {order.produtosIds.length} item{order.produtosIds.length !== 1 ? "s" : ""}
+                          </span>
+                        )}
+                      </td>
+
                       <td className="py-5 px-6">
                         <div className="flex flex-col">
                           <span className="text-[10px] font-bold text-white/60">
@@ -215,48 +266,41 @@ export default function AdminOrdersClient() {
                           </span>
                         </div>
                       </td>
+
                       <td className="py-5 px-6">
-                        <span className="text-[10px] font-bold text-white/40">
-                          {order.produtosIds.length} item{order.produtosIds.length !== 1 ? "s" : ""}
-                        </span>
-                      </td>
-                      <td className="py-5 px-6">
-                        <div className="flex items-center gap-2">
-                          <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full ${config.bg}`}>
-                            <StatusIcon size={12} className={config.color} />
-                            <span className={`text-[9px] font-black uppercase tracking-widest ${config.color}`}>
-                              {config.label}
-                            </span>
-                          </div>
+                        <div className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full ${config.bg}`}>
+                          <StatusIcon size={12} className={config.color} />
+                          <span className={`text-[9px] font-black uppercase tracking-widest ${config.color}`}>
+                            {config.label}
+                          </span>
                         </div>
                       </td>
+
                       <td className="py-5 px-6 text-right">
                         <span className="text-sm font-black text-white">
                           £{order.totalAmmount.toFixed(2)}
                         </span>
                       </td>
+
                       <td className="py-5 px-6 text-right">
-                        <div className="flex items-center justify-end gap-2">
-                          {/* Status Dropdown */}
-                          <div className="relative">
-                            <select
-                              value={order.status}
-                              onChange={e => handleStatusChange(order.id, e.target.value)}
-                              disabled={isUpdating}
-                              className={`appearance-none cursor-pointer bg-white/5 border border-white/10 rounded-lg px-3 py-2 pr-7 text-[9px] font-black uppercase tracking-widest outline-none transition-all ${
-                                isUpdating 
-                                ? "opacity-50 cursor-not-allowed text-white/20" 
-                                : "text-white/60 hover:text-white hover:border-white/30 focus:border-accent/50"
-                              }`}
-                            >
-                              {STATUS_OPTIONS.map(status => (
-                                <option key={status} value={status} className="bg-black text-white">
-                                  {STATUS_CONFIG[status].label}
-                                </option>
-                              ))}
-                            </select>
-                            <ChevronDown size={10} className="absolute right-2 top-1/2 -translate-y-1/2 text-white/20 pointer-events-none" />
-                          </div>
+                        <div className="relative inline-block">
+                          <select
+                            value={order.status}
+                            onChange={(e) => handleStatusChange(order.id, e.target.value)}
+                            disabled={isUpdating}
+                            className={`appearance-none cursor-pointer bg-white/5 border border-white/10 rounded-lg px-3 py-2 pr-7 text-[9px] font-black uppercase tracking-widest outline-none transition-all ${
+                              isUpdating
+                                ? "opacity-50 cursor-not-allowed text-white/20"
+                                : "text-white/60 hover:text-white hover:border-white/30"
+                            }`}
+                          >
+                            {STATUS_OPTIONS.map((s) => (
+                              <option key={s} value={s} className="bg-black text-white">
+                                {STATUS_CONFIG[s].label}
+                              </option>
+                            ))}
+                          </select>
+                          <ChevronDown size={10} className="absolute right-2 top-1/2 -translate-y-1/2 text-white/20 pointer-events-none" />
                         </div>
                       </td>
                     </tr>

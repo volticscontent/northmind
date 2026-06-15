@@ -1,31 +1,36 @@
-"use client";
-
 import Link from "next/link";
-import { FrameSequence } from "./FrameSequence";
-import { useEffect, useState } from "react";
 
 export function Hero() {
-  const [isMobile, setIsMobile] = useState(false);
-
-  useEffect(() => {
-    const checkMobile = () => setIsMobile(window.innerWidth < 768);
-    checkMobile();
-    window.addEventListener("resize", checkMobile);
-    return () => window.removeEventListener("resize", checkMobile);
-  }, []);
-
   return (
-    <section className="relative h-[90dvh] md:h-[100dvh] w-full flex items-center justify-center overflow-hidden bg-black">
-      {/* Background Frame Sequence - Bypasses iOS native player issues */}
+    <section className="relative h-[75dvh] md:h-[100dvh] w-full flex items-center justify-center overflow-hidden bg-black">
+      {/* Background Video - Native HTML5 for Instant LCP */}
       <div className="absolute inset-0 z-0">
-        <FrameSequence
-          key={isMobile ? "mobile" : "desktop"}
-          basePath={isMobile ? "/assets/hero-frames/mobile" : "/assets/hero-frames/desktop"}
-          frameCount={492}
-          fps={40}
+        {/* Desktop Video */}
+        <video
+          autoPlay
+          loop
+          muted
+          playsInline
+          preload="auto"
           poster="/assets/hero-video.png"
-          className="absolute inset-0 h-full w-full object-cover opacity-50 grayscale contrast-125"
-        />
+          className="absolute inset-0 h-full w-full object-cover opacity-50 grayscale contrast-125 hidden md:block"
+        >
+          <source src="/assets/hero-video.mp4" type="video/mp4" />
+        </video>
+
+        {/* Mobile Video */}
+        <video
+          autoPlay
+          loop
+          muted
+          playsInline
+          preload="auto"
+          poster="/assets/hero-video.png"
+          className="absolute inset-0 h-full w-full object-cover opacity-50 grayscale contrast-125 block md:hidden"
+        >
+          <source src="/assets/hero-video-mobile.mp4" type="video/mp4" />
+        </video>
+        
         <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-transparent to-black" />
       </div>
 

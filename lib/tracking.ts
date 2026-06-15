@@ -9,7 +9,12 @@ interface Product {
   selectedSize?: string;
 }
 
-const GBP_TO_BRL = 7.4;
+const getGbpToBrlRate = (): number => {
+  if (typeof window !== "undefined") {
+    return (window as any).__NM_CONFIG__?.gbpToBrlRate || 7.4;
+  }
+  return 7.4;
+};
 
 const getCustomerData = () => {
   if (typeof window === 'undefined') return {};
@@ -23,9 +28,9 @@ export const trackViewProduct = (product: Product) => {
   const fbq = (window as any).fbq;
   const ttq = (window as any).ttq;
   const utmHelper = (window as any).utmHelper;
+  const rate = getGbpToBrlRate();
 
   console.group('👀 Tracking: ViewProduct');
-  console.log('Product:', product.title, '| Price:', product.price);
 
   // Meta Pixel
   if (fbq) {
@@ -57,15 +62,14 @@ export const trackViewProduct = (product: Product) => {
   if (utmHelper && typeof utmHelper.send === 'function') {
     utmHelper.send('view_item', {
       ...getCustomerData(),
-      totalPriceInCents: Math.round(product.price * 100 * GBP_TO_BRL),
+      totalPriceInCents: Math.round(product.price * 100 * rate),
       products: [{
         id: product.id,
         name: product.title,
-        priceInCents: Math.round(product.price * 100 * GBP_TO_BRL),
+        priceInCents: Math.round(product.price * 100 * rate),
         quantity: 1
       }]
     });
-    console.log('✅ UTMify Manual Event Sent: view_item (Converted 7.4x)');
   }
 
   console.groupEnd();
@@ -77,9 +81,9 @@ export const trackAddToCart = (product: Product, quantity: number = 1) => {
   const fbq = (window as any).fbq;
   const ttq = (window as any).ttq;
   const utmHelper = (window as any).utmHelper;
+  const rate = getGbpToBrlRate();
 
   console.group('🛒 Tracking: AddToCart');
-  console.log('Product:', product.title, '| Price:', product.price);
 
   // Meta Pixel
   if (fbq) {
@@ -111,15 +115,14 @@ export const trackAddToCart = (product: Product, quantity: number = 1) => {
   if (utmHelper && typeof utmHelper.send === 'function') {
     utmHelper.send('add_to_cart', {
       ...getCustomerData(),
-      totalPriceInCents: Math.round(product.price * quantity * 100 * GBP_TO_BRL),
+      totalPriceInCents: Math.round(product.price * quantity * 100 * rate),
       products: [{
         id: product.id,
         name: product.title,
-        priceInCents: Math.round(product.price * 100 * GBP_TO_BRL),
+        priceInCents: Math.round(product.price * 100 * rate),
         quantity: quantity
       }]
     });
-    console.log('✅ UTMify Manual Event Sent: add_to_cart (Converted 7.4x)');
   }
 
   console.groupEnd();
@@ -131,12 +134,23 @@ export const trackBeginCheckout = (cart: Product[], totalPrice: number) => {
   const fbq = (window as any).fbq;
   const ttq = (window as any).ttq;
   const utmHelper = (window as any).utmHelper;
+  const rate = getGbpToBrlRate();
+
+  // Customer data stored by CheckoutForm before calling this function
+  const storedEmail = localStorage.getItem('nm_customer_email');
+  const storedPhone = localStorage.getItem('nm_customer_phone');
 
   console.group('💳 Tracking: InitiateCheckout');
-  console.log('Total:', totalPrice, '| Items:', cart.length);
 
-  // Meta Pixel
+  // Meta Pixel — update advanced matching if customer data is available
   if (fbq) {
+    const pixelId = (window as any).__NM_CONFIG__?.metaPixelId;
+    if (pixelId && (storedEmail || storedPhone)) {
+      const userData: Record<string, string> = {};
+      if (storedEmail) userData.em = storedEmail.toLowerCase().trim();
+      if (storedPhone) userData.ph = storedPhone.replace(/\D/g, '');
+      fbq('init', pixelId, userData);
+    }
     fbq('track', 'InitiateCheckout', {
       content_ids: cart.map(item => item.id),
       content_type: 'product',
@@ -165,15 +179,14 @@ export const trackBeginCheckout = (cart: Product[], totalPrice: number) => {
   if (utmHelper && typeof utmHelper.send === 'function') {
     utmHelper.send('initiate_checkout', {
       ...getCustomerData(),
-      totalPriceInCents: Math.round(totalPrice * 100 * GBP_TO_BRL),
+      totalPriceInCents: Math.round(totalPrice * 100 * rate),
       products: cart.map(item => ({
         id: item.id,
         name: item.title,
-        priceInCents: Math.round(item.price * 100 * GBP_TO_BRL),
+        priceInCents: Math.round(item.price * 100 * rate),
         quantity: item.quantity ?? 1
       }))
     });
-    console.log('✅ UTMify Manual Event Sent: initiate_checkout (Converted 7.4x)');
   }
 
   console.groupEnd();
@@ -185,11 +198,21 @@ export const trackPurchase = (order: { id: string; amount: number; email?: strin
   const fbq = (window as any).fbq;
   const ttq = (window as any).ttq;
 
-  console.group('✨ Tracking: Purchase');
-  console.log('Order ID:', order.id, '| Amount:', order.amount);
+  // Customer data stored during checkout (for advanced matching)
+  const storedEmail = localStorage.getItem('nm_customer_email');
+  const storedPhone = localStorage.getItem('nm_customer_phone');
 
-  // Meta Pixel
+  console.group('✨ Tracking: Purchase');
+
+  // Meta Pixel — update advanced matching then fire Purchase
   if (fbq) {
+    const pixelId = (window as any).__NM_CONFIG__?.metaPixelId;
+    if (pixelId && (storedEmail || storedPhone)) {
+      const userData: Record<string, string> = {};
+      if (storedEmail) userData.em = storedEmail.toLowerCase().trim();
+      if (storedPhone) userData.ph = storedPhone.replace(/\D/g, '');
+      fbq('init', pixelId, userData);
+    }
     fbq('track', 'Purchase', {
       value: Number(order.amount.toFixed(2)),
       currency: 'GBP',
@@ -198,17 +221,14 @@ export const trackPurchase = (order: { id: string; amount: number; email?: strin
     });
   }
 
-  // TikTok Pixel
+  // TikTok Pixel — identify then fire CompletePayment
   if (ttq) {
-    ttq.track('CompletePayment', {
-      value: Number(order.amount.toFixed(2)),
-      currency: 'GBP',
-      content_type: 'product',
-    });
-  }
-
-  // TikTok Pixel
-  if (ttq) {
+    if (storedEmail || storedPhone) {
+      ttq.identify({
+        ...(storedEmail && { email: storedEmail }),
+        ...(storedPhone && { phone_number: storedPhone }),
+      });
+    }
     ttq.track('CompletePayment', {
       content_type: 'product',
       value: Number(order.amount.toFixed(2)),
@@ -222,19 +242,9 @@ export const trackPurchase = (order: { id: string; amount: number; email?: strin
     });
   }
 
-  // --- UTMify Manual Fallback (redundant with trackUtmfyPurchase but safe) ---
-  const utmHelper = (window as any).utmHelper;
-  if (utmHelper && typeof utmHelper.send === 'function') {
-    utmHelper.send('purchase', {
-      orderId: order.id,
-      totalPriceInCents: Math.round(order.amount * 100 * GBP_TO_BRL),
-      platform: 'stripe',
-      paymentMethod: 'credit_card',
-      status: 'paid',
-    });
-  }
-
   console.groupEnd();
+  // Note: UTMify browser pixel is handled by trackUtmfyPurchase (called separately)
+  // to avoid double-firing with the server-side S2S event
 };
 
 export const trackUtmfyPurchase = (order: { id: string; amountInBRL: number; email?: string }) => {
@@ -243,7 +253,6 @@ export const trackUtmfyPurchase = (order: { id: string; amountInBRL: number; ema
   const utmHelper = (window as any).utmHelper;
 
   console.group('📊 Tracking: UTMify Purchase (Manual)');
-  console.log('Order ID:', order.id, '| Amount BRL:', order.amountInBRL);
 
   if (utmHelper && typeof utmHelper.send === 'function') {
     utmHelper.send('purchase', {
@@ -253,7 +262,6 @@ export const trackUtmfyPurchase = (order: { id: string; amountInBRL: number; ema
       paymentMethod: 'credit_card',
       status: 'paid',
     });
-    console.log('✅ UTMify Manual Event Sent (Converted 7.4x)');
   }
 
   console.groupEnd();

@@ -68,7 +68,7 @@ export default async function AdminDashboard() {
             href="/admin/orders" 
             className="flex items-center gap-2 group text-[10px] font-black uppercase tracking-widest text-white/40 hover:text-white transition-all"
           >
-            Vier all orders
+            View all orders
             <ChevronRight size={14} className="group-hover:translate-x-1 transition-transform" />
           </Link>
         </div>
@@ -88,7 +88,7 @@ export default async function AdminDashboard() {
                   <td className="py-6 px-4">
                     <div className="flex flex-col">
                       <span className="text-xs font-black uppercase tracking-tight text-white mb-0.5">
-                        {(order.user as any)?.name || "Anonumous"}
+                        {(order.user as any)?.name || "Anonymous"}
                       </span>
                       <span className="text-[10px] font-medium text-white/20">
                         {(order.user as any)?.email}
